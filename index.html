@@ -304,8 +304,8 @@ function render(){
           const det=h('div',{class:'set-detail'});
           const acts=h('div',{class:'set-actions'});
           acts.appendChild(h('button',{class:'bb'+(st.done?' active-gn':''),onclick:()=>markAll(set.items)},st.done?'↩ Unmark':'✓✓ All'));
-          acts.appendChild(h('a',{class:'bb',href:'https://scmdb.net/?page=fab',target:'_blank',rel:'noopener noreferrer'},'SCMDB ↗'));
-          acts.appendChild(h('a',{class:'bb',href:'https://www.sccrafter.com',target:'_blank',rel:'noopener noreferrer',style:{borderColor:'var(--am)',color:'var(--am)'}},'Crafter ↗'));
+          acts.appendChild(h('a',{class:'bb',href:'https://www.google.com/search?q=site:scmdb.net+'+encodeURIComponent(set.name),target:'_blank',rel:'noopener noreferrer'},'SCMDB ↗'));
+          acts.appendChild(h('a',{class:'bb',href:'https://www.google.com/search?q=site:sccrafter.com+'+encodeURIComponent(set.name),target:'_blank',rel:'noopener noreferrer',style:{borderColor:'var(--am)',color:'var(--am)'}},'Crafter ↗'));
           det.appendChild(acts);
 
           set.items.forEach(item=>{
@@ -313,6 +313,8 @@ function render(){
             const ir=h('div',{class:'item-row'});
             ir.appendChild(h('div',{class:'item-bar'+(isO?' owned':isW?' wanted':'')}));
             ir.appendChild(h('span',{class:'item-name'+(isO?' owned':isW?' wanted':'')},item.name));
+            ir.appendChild(h('a',{class:'bb',href:'https://www.google.com/search?q=site:scmdb.net+'+encodeURIComponent(item.name),target:'_blank',rel:'noopener noreferrer',style:{minWidth:'36px',minHeight:'36px',fontSize:'10px',borderRadius:'8px',borderWidth:'1px'}},'M'));
+            ir.appendChild(h('a',{class:'bb',href:'https://www.google.com/search?q=site:sccrafter.com+'+encodeURIComponent(item.name),target:'_blank',rel:'noopener noreferrer',style:{minWidth:'36px',minHeight:'36px',fontSize:'10px',borderRadius:'8px',borderWidth:'1px',borderColor:'var(--am)',color:'var(--am)'}},'C'));
             ir.appendChild(h('button',{class:'bb'+(isO?' active-gn':''),onclick:()=>toggleOwned(item.id)},'✓'));
             ir.appendChild(h('button',{class:'bb'+(isW?' active-am':''),onclick:()=>toggleWanted(item.id)},'★'));
             det.appendChild(ir);
@@ -340,6 +342,8 @@ function render(){
         const ir=h('div',{class:'item-row',style:{padding:'6px 16px'}});
         ir.appendChild(h('div',{class:'item-bar'+(isO?' owned':isW?' wanted':'')}));
         ir.appendChild(h('span',{class:'item-name'+(isO?' owned':isW?' wanted':'')},ammo.name));
+        ir.appendChild(h('a',{class:'bb',href:'https://www.google.com/search?q=site:scmdb.net+'+encodeURIComponent(ammo.name),target:'_blank',rel:'noopener noreferrer',style:{minWidth:'36px',minHeight:'36px',fontSize:'10px',borderRadius:'8px',borderWidth:'1px'}},'M'));
+        ir.appendChild(h('a',{class:'bb',href:'https://www.google.com/search?q=site:sccrafter.com+'+encodeURIComponent(ammo.name),target:'_blank',rel:'noopener noreferrer',style:{minWidth:'36px',minHeight:'36px',fontSize:'10px',borderRadius:'8px',borderWidth:'1px',borderColor:'var(--am)',color:'var(--am)'}},'C'));
         ir.appendChild(h('button',{class:'bb'+(isO?' active-gn':''),onclick:()=>toggleOwned(ammo.id)},'✓'));
         ir.appendChild(h('button',{class:'bb'+(isW?' active-am':''),onclick:()=>toggleWanted(ammo.id)},'★'));
         app.appendChild(ir);
