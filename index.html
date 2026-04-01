@@ -304,17 +304,15 @@ function render(){
           const det=h('div',{class:'set-detail'});
           const acts=h('div',{class:'set-actions'});
           acts.appendChild(h('button',{class:'bb'+(st.done?' active-gn':''),onclick:()=>markAll(set.items)},st.done?'↩ Unmark':'✓✓ All'));
-          acts.appendChild(h('a',{class:'bb',href:'https://www.google.com/search?q=site:scmdb.net+'+encodeURIComponent(set.name),target:'_blank',rel:'noopener noreferrer'},'SCMDB ↗'));
-          acts.appendChild(h('a',{class:'bb',href:'https://www.google.com/search?q=site:sccrafter.com+'+encodeURIComponent(set.name),target:'_blank',rel:'noopener noreferrer',style:{borderColor:'var(--am)',color:'var(--am)'}},'Crafter ↗'));
           det.appendChild(acts);
 
           set.items.forEach(item=>{
             const isO=state.owned.has(item.id);const isW=state.wanted.has(item.id);
             const ir=h('div',{class:'item-row'});
             ir.appendChild(h('div',{class:'item-bar'+(isO?' owned':isW?' wanted':'')}));
-            ir.appendChild(h('span',{class:'item-name'+(isO?' owned':isW?' wanted':'')},item.name));
-            ir.appendChild(h('a',{class:'bb',href:'https://www.google.com/search?q=site:scmdb.net+'+encodeURIComponent(item.name),target:'_blank',rel:'noopener noreferrer',style:{minWidth:'36px',minHeight:'36px',fontSize:'10px',borderRadius:'8px',borderWidth:'1px'}},'M'));
-            ir.appendChild(h('a',{class:'bb',href:'https://www.google.com/search?q=site:sccrafter.com+'+encodeURIComponent(item.name),target:'_blank',rel:'noopener noreferrer',style:{minWidth:'36px',minHeight:'36px',fontSize:'10px',borderRadius:'8px',borderWidth:'1px',borderColor:'var(--am)',color:'var(--am)'}},'C'));
+            const nameEl=h('span',{class:'item-name'+(isO?' owned':isW?' wanted':''),onclick:e=>{e.stopPropagation();navigator.clipboard.writeText(item.name).then(()=>{nameEl.style.opacity='0.5';setTimeout(()=>{nameEl.style.opacity='1';},300);});}},item.name);
+            nameEl.title='Tap to copy name';
+            ir.appendChild(nameEl);
             ir.appendChild(h('button',{class:'bb'+(isO?' active-gn':''),onclick:()=>toggleOwned(item.id)},'✓'));
             ir.appendChild(h('button',{class:'bb'+(isW?' active-am':''),onclick:()=>toggleWanted(item.id)},'★'));
             det.appendChild(ir);
@@ -341,9 +339,9 @@ function render(){
         const isO=state.owned.has(ammo.id);const isW=state.wanted.has(ammo.id);
         const ir=h('div',{class:'item-row',style:{padding:'6px 16px'}});
         ir.appendChild(h('div',{class:'item-bar'+(isO?' owned':isW?' wanted':'')}));
-        ir.appendChild(h('span',{class:'item-name'+(isO?' owned':isW?' wanted':'')},ammo.name));
-        ir.appendChild(h('a',{class:'bb',href:'https://www.google.com/search?q=site:scmdb.net+'+encodeURIComponent(ammo.name),target:'_blank',rel:'noopener noreferrer',style:{minWidth:'36px',minHeight:'36px',fontSize:'10px',borderRadius:'8px',borderWidth:'1px'}},'M'));
-        ir.appendChild(h('a',{class:'bb',href:'https://www.google.com/search?q=site:sccrafter.com+'+encodeURIComponent(ammo.name),target:'_blank',rel:'noopener noreferrer',style:{minWidth:'36px',minHeight:'36px',fontSize:'10px',borderRadius:'8px',borderWidth:'1px',borderColor:'var(--am)',color:'var(--am)'}},'C'));
+        const nameEl=h('span',{class:'item-name'+(isO?' owned':isW?' wanted':''),onclick:()=>{navigator.clipboard.writeText(ammo.name).then(()=>{nameEl.style.opacity='0.5';setTimeout(()=>{nameEl.style.opacity='1';},300);});}},ammo.name);
+        nameEl.title='Tap to copy name';
+        ir.appendChild(nameEl);
         ir.appendChild(h('button',{class:'bb'+(isO?' active-gn':''),onclick:()=>toggleOwned(ammo.id)},'✓'));
         ir.appendChild(h('button',{class:'bb'+(isW?' active-am':''),onclick:()=>toggleWanted(ammo.id)},'★'));
         app.appendChild(ir);
@@ -354,10 +352,6 @@ function render(){
   // Footer
   app.appendChild(h('div',{class:'footer'},
     'SC Blueprint Tracker · '+TOTAL_BP+' blueprints · Alpha 4.7',
-    h('br'),
-    h('a',{href:'https://scmdb.net/?page=fab',target:'_blank',rel:'noopener noreferrer'},'SCMDB'),
-    ' · ',
-    h('a',{href:'https://www.sccrafter.com',target:'_blank',rel:'noopener noreferrer',style:{color:'var(--am)'}},'SC Crafter'),
     h('br'),'Community tool · Not affiliated with CIG'
   ));
 }
