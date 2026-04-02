@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SC Scan Identifier</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛏</text></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'JetBrains Mono','Fira Code','Consolas',monospace;background:#0a0e17;color:#e2e8f0;min-height:100vh;max-width:600px;margin:0 auto;padding:0 0 40px}
+.header{background:#111827;border-bottom:1px solid #1e293b;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;color:#3b82f6}
+.sub{font-size:10px;color:#64748b}
+
+.search-box{padding:16px;background:#111827;border-bottom:1px solid #1e293b}
+.search-label{font-size:11px;color:#94a3b8;margin-bottom:8px;display:block}
+.search-input{width:100%;padding:14px 16px;border-radius:12px;font-size:18px;font-family:inherit;border:2px solid #1e293b;background:#1a2236;color:#e2e8f0;outline:none;text-align:center;letter-spacing:1px}
+.search-input:focus{border-color:#3b82f6}
+.search-input::placeholder{color:#475569;font-size:14px;letter-spacing:0}
+.hint{font-size:10px;color:#475569;margin-top:8px;text-align:center}
+
+.results{padding:8px 0}
+.no-results{text-align:center;padding:40px 16px;color:#475569}
+.no-results .icon{font-size:32px;margin-bottom:8px}
+
+.result{border-bottom:1px solid #1e293b;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.result.exact{background:rgba(59,130,246,.08)}
+.result.approx{background:rgba(245,158,11,.05)}
+
+.rarity-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.rarity-legendary{background:#f59e0b}
+.rarity-epic{background:#ec4899}
+.rarity-rare{background:#60a5fa}
+.rarity-uncommon{background:#22c55e}
+.rarity-common{background:#94a3b8}
+.rarity-roc{background:#e2e8f0}
+.rarity-fps{background:#a855f7}
+.rarity-salvage{background:#92400e}
+
+.result-info{flex:1;min-width:0}
+.result-name{font-weight:700;font-size:14px}
+.result-detail{font-size:11px;color:#64748b;margin-top:2px}
+.result-rarity{font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+.rarity-legendary .result-rarity{color:#f59e0b}
+.rarity-epic .result-rarity{color:#ec4899}
+.rarity-rare .result-rarity{color:#60a5fa}
+.rarity-uncommon .result-rarity{color:#22c55e}
+.rarity-common .result-rarity{color:#94a3b8}
+
+.result-sig{text-align:right;flex-shrink:0}
+.result-sig-val{font-weight:700;font-size:14px;color:#3b82f6}
+.result-sig-rocks{font-size:10px;color:#64748b}
+.result-match{font-size:9px;padding:2px 6px;border-radius:4px;margin-top:2px;display:inline-block}
+.match-exact{background:rgba(59,130,246,.2);color:#60a5fa}
+.match-approx{background:rgba(245,158,11,.2);color:#fbbf24}
+.match-range{background:rgba(34,197,94,.2);color:#4ade80}
+
+.section-title{padding:8px 16px;font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;background:#0d1220;border-bottom:1px solid #1e293b}
+
+.ref-toggle{padding:12px 16px;text-align:center}
+.ref-toggle button{padding:10px 20px;border-radius:10px;font-size:12px;font-family:inherit;border:2px solid #1e293b;background:#1a2236;color:#94a3b8;cursor:pointer;min-height:44px}
+.ref-toggle button.active{border-color:#3b82f6;background:rgba(59,130,246,.15);color:#3b82f6}
+
+.ref-table{padding:0 8px 16px}
+.ref-row{display:flex;align-items:center;padding:6px 8px;border-bottom:1px solid #1e293b08;gap:8px}
+.ref-row:nth-child(odd){background:rgba(255,255,255,.01)}
+.ref-name{flex:1;font-size:12px}
+.ref-base{font-size:11px;color:#3b82f6;width:50px;text-align:right}
+.ref-max{font-size:10px;color:#475569;width:40px;text-align:right}
+
+.footer{text-align:center;padding:20px 16px;font-size:10px;color:#334155;border-top:1px solid #1e293b;margin-top:16px}
+.legend{padding:12px 16px;background:#0d1220;border-bottom:1px solid #1e293b}
+.legend-title{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.legend-grid{display:flex;flex-wrap:wrap;gap:6px 16px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#94a3b8}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div class="header">
+  <div class="logo">⛏ SC Scan ID</div>
+  <div class="sub">Signature Identifier</div>
+</div>
+
+<div class="search-box">
+  <label class="search-label">Enter scan signature value</label>
+  <input class="search-input" id="scanInput" type="text" inputmode="text" placeholder="8600, ~5000, 4000-7500" autofocus>
+  <div class="hint">Exact · ~value ±10% · min-max range</div>
+</div>
+
+<div class="legend">
+  <div class="legend-title">Ship Mining</div>
+  <div class="legend-grid">
+    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Legendary</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ec4899"></div>Epic</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Rare</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Uncommon</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Common</div>
+  </div>
+  <div class="legend-title" style="margin-top:10px">Other</div>
+  <div class="legend-grid">
+    <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div>ROC Mineable</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>FPS Mineable</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#92400e"></div>Salvage</div>
+  </div>
+</div>
+
+<div id="results" class="results"></div>
+
+<div class="ref-toggle">
+  <button id="refBtn" onclick="toggleRef()">Show Full Reference Table</button>
+</div>
+<div id="refTable" style="display:none"></div>
+
+<div class="footer">
+  SC Scan Signature Identifier · Star Citizen 4.7<br>
+  Data source: SCMDB · Community tool · Not affiliated with CIG
+</div>
+
+</div>
+
+<script>
+// ═══ ORE DATABASE ═══
+// [name, base_signature, max_rocks, rarity, type]
+const ORES = [
+  // Ship Mining - Legendary (max 2)
+  ["Quantainium", 3170, 2, "legendary", "ship"],
+  ["Stileron", 3185, 2, "legendary", "ship"],
+  ["Savrilium", 3200, 2, "legendary", "ship"],
+  // Ship Mining - Epic (max 3)
+  ["Ouratite", 3370, 3, "epic", "ship"],
+  ["Riccite", 3385, 3, "epic", "ship"],
+  ["Lindinium", 3400, 3, "epic", "ship"],
+  // Ship Mining - Rare (max 4)
+  ["Beryl", 3540, 4, "rare", "ship"],
+  ["Taranite", 3555, 4, "rare", "ship"],
+  ["Borase", 3570, 4, "rare", "ship"],
+  ["Gold", 3585, 4, "rare", "ship"],
+  ["Bexalite", 3600, 4, "rare", "ship"],
+  // Ship Mining - Uncommon (max 5)
+  ["Laranite", 3825, 5, "uncommon", "ship"],
+  ["Aslarite", 3840, 5, "uncommon", "ship"],
+  ["Titanium", 3855, 5, "uncommon", "ship"],
+  ["Tungsten", 3870, 5, "uncommon", "ship"],
+  ["Agricium", 3885, 5, "uncommon", "ship"],
+  ["Torite", 3900, 5, "uncommon", "ship"],
+  // Ship Mining - Common (max 6)
+  ["Hephaestanite", 4180, 6, "common", "ship"],
+  ["Tin", 4195, 6, "common", "ship"],
+  ["Quartz", 4210, 6, "common", "ship"],
+  ["Corundum", 4225, 6, "common", "ship"],
+  ["Copper", 4240, 6, "common", "ship"],
+  ["Silicon", 4255, 6, "common", "ship"],
+  ["Iron", 4270, 6, "common", "ship"],
+  ["Aluminium", 4285, 6, "common", "ship"],
+  ["Ice", 4300, 6, "common", "ship"],
+  // ROC Mining (max 7)
+  ["Beradom (ROC)", 4000, 7, "roc", "roc"],
+  ["Carinite (ROC)", 4000, 7, "roc", "roc"],
+  ["Feynmaline (ROC)", 4000, 7, "roc", "roc"],
+  ["Glacosite (ROC)", 4000, 7, "roc", "roc"],
+  // FPS Mining (max 10)
+  ["Aphorite", 3000, 10, "fps", "fps"],
+  ["Carinite (FPS)", 3000, 10, "fps", "fps"],
+  ["Carinite Pure", 3000, 10, "fps", "fps"],
+  ["Dolivine", 3000, 10, "fps", "fps"],
+  ["Hadanite", 3000, 10, "fps", "fps"],
+  ["Jaclium", 3000, 10, "fps", "fps"],
+  ["Janalite", 3000, 10, "fps", "fps"],
+  ["Sadaryx", 3000, 10, "fps", "fps"],
+  ["Saldynium", 3000, 10, "fps", "fps"],
+  // Salvage (max 15)
+  ["Salvage (Wrecks/Debris)", 2000, 15, "salvage", "salvage"],
+];
+
+// ═══ SEARCH ENGINE ═══
+function parseQuery(raw) {
+  const s = raw.trim();
+  if (!s) return null;
+
+  // Range: "4000-7500"
+  const rangeMatch = s.match(/^(\d+)\s*[-–]\s*(\d+)$/);
+  if (rangeMatch) return { type: "range", min: parseInt(rangeMatch[1]), max: parseInt(rangeMatch[2]) };
+
+  // Approx: "~5000"
+  const approxMatch = s.match(/^~\s*(\d+)$/);
+  if (approxMatch) { const v = parseInt(approxMatch[1]); return { type: "approx", min: Math.floor(v * 0.9), max: Math.ceil(v * 1.1), center: v }; }
+
+  // Exact
+  const exactMatch = s.match(/^(\d+)$/);
+  if (exactMatch) return { type: "exact", value: parseInt(exactMatch[1]) };
+
+  return null;
+}
+
+function search(query) {
+  const q = parseQuery(query);
+  if (!q) return [];
+
+  const results = [];
+
+  ORES.forEach(([name, base, maxRocks, rarity, type]) => {
+    for (let rocks = 1; rocks <= maxRocks; rocks++) {
+      const sig = base * rocks;
+      let match = null;
+
+      if (q.type === "exact" && sig === q.value) {
+        match = "exact";
+      } else if (q.type === "approx" && sig >= q.min && sig <= q.max) {
+        match = sig === q.center ? "exact" : "approx";
+      } else if (q.type === "range" && sig >= q.min && sig <= q.max) {
+        match = "range";
+      }
+
+      if (match) {
+        results.push({ name, base, rocks, sig, rarity, type, match });
+      }
+    }
+  });
+
+  // Sort: exact first, then by signature
+  results.sort((a, b) => {
+    const matchOrder = { exact: 0, approx: 1, range: 2 };
+    if (matchOrder[a.match] !== matchOrder[b.match]) return matchOrder[a.match] - matchOrder[b.match];
+    return a.sig - b.sig;
+  });
+
+  return results;
+}
+
+// ═══ RENDER ═══
+const rarityColors = {
+  legendary: "#f59e0b", epic: "#ec4899", rare: "#60a5fa",
+  uncommon: "#22c55e", common: "#94a3b8", roc: "#e2e8f0",
+  fps: "#a855f7", salvage: "#92400e"
+};
+
+const rarityLabels = {
+  legendary: "Legendary", epic: "Epic", rare: "Rare",
+  uncommon: "Uncommon", common: "Common", roc: "ROC Mining",
+  fps: "FPS Mining", salvage: "Salvage"
+};
+
+const typeIcons = { ship: "🚀", roc: "🚜", fps: "⛏", salvage: "🛰" };
+
+function renderResults() {
+  const input = document.getElementById("scanInput").value;
+  const div = document.getElementById("results");
+
+  if (!input.trim()) {
+    div.innerHTML = '<div class="no-results"><div class="icon">⛏</div>Enter a scan value to identify ores</div>';
+    return;
+  }
+
+  const q = parseQuery(input);
+  if (!q) {
+    div.innerHTML = '<div class="no-results"><div class="icon">❓</div>Use: exact number, ~number, or min-max</div>';
+    return;
+  }
+
+  const results = search(input);
+  if (!results.length) {
+    div.innerHTML = '<div class="no-results"><div class="icon">🔍</div>No matching ores found</div>';
+    return;
+  }
+
+  let html = '';
+  let lastRarity = null;
+
+  results.forEach(r => {
+    if (r.rarity !== lastRarity) {
+      html += `<div class="section-title">${typeIcons[r.type]} ${rarityLabels[r.rarity]}</div>`;
+      lastRarity = r.rarity;
+    }
+
+    const matchLabel = r.match === "exact" ? "EXACT" : r.match === "approx" ? "≈ APPROX" : "IN RANGE";
+    const matchClass = r.match === "exact" ? "match-exact" : r.match === "approx" ? "match-approx" : "match-range";
+
+    html += `
+      <div class="result ${r.match}">
+        <div class="rarity-dot rarity-${r.rarity}"></div>
+        <div class="result-info">
+          <div class="result-name">${r.name}</div>
+          <div class="result-detail">Base: ${r.base.toLocaleString()} · ${typeIcons[r.type]} ${r.type}</div>
+        </div>
+        <div class="result-sig">
+          <div class="result-sig-val">${r.sig.toLocaleString()}</div>
+          <div class="result-sig-rocks">${r.rocks} rock${r.rocks > 1 ? 's' : ''}</div>
+          <span class="result-match ${matchClass}">${matchLabel}</span>
+        </div>
+      </div>`;
+  });
+
+  div.innerHTML = html;
+}
+
+// ═══ REFERENCE TABLE ═══
+let refVisible = false;
+function toggleRef() {
+  refVisible = !refVisible;
+  const btn = document.getElementById("refBtn");
+  const div = document.getElementById("refTable");
+  btn.textContent = refVisible ? "Hide Reference Table" : "Show Full Reference Table";
+  btn.className = refVisible ? "active" : "";
+
+  if (!refVisible) { div.style.display = "none"; return; }
+
+  let html = '';
+  let lastRarity = null;
+  ORES.forEach(([name, base, maxRocks, rarity, type]) => {
+    if (rarity !== lastRarity) {
+      html += `<div class="section-title">${typeIcons[type]} ${rarityLabels[rarity]} · max ${maxRocks}×</div>`;
+      lastRarity = rarity;
+    }
+    html += `<div class="ref-row">
+      <div class="rarity-dot rarity-${rarity}"></div>
+      <div class="ref-name">${name}</div>
+      <div class="ref-base">${base.toLocaleString()}</div>
+      <div class="ref-max">×${maxRocks}</div>
+    </div>`;
+  });
+  div.innerHTML = html;
+  div.style.display = "block";
+}
+
+// ═══ INIT ═══
+document.getElementById("scanInput").addEventListener("input", renderResults);
+renderResults();
+</script>
+</body>
+</html>
