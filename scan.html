@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>SC Scan ID</title>
+<title>MinerScan</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛏</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -219,8 +219,8 @@ input{outline:none}
 .scan-input{
   width:100%;
   padding:18px 16px;
-  background:var(--bg);
-  border:1px solid var(--line2);
+  background:#1f2733;
+  border:1px solid #3a4556;
   color:var(--amber);
   font-family:var(--mono);
   font-size:24px;
@@ -228,14 +228,16 @@ input{outline:none}
   text-align:center;
   letter-spacing:3px;
   caret-color:var(--amber);
-  transition:border-color .2s;
+  transition:all .2s;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.4);
 }
 .scan-input:focus{
   border-color:var(--amber);
-  box-shadow:0 0 0 1px var(--amber), inset 0 0 20px rgba(251,191,36,.05);
+  background:#252e3c;
+  box-shadow:0 0 0 1px var(--amber), inset 0 2px 8px rgba(0,0,0,.4), 0 0 24px rgba(251,191,36,.15);
 }
 .scan-input::placeholder{
-  color:var(--dim);
+  color:#5a6473;
   font-size:14px;
   letter-spacing:1px;
   font-weight:500;
@@ -259,17 +261,23 @@ input{outline:none}
 .mass-input{
   width:100%;
   padding:14px 12px;
-  background:var(--bg);
-  border:1px solid var(--line2);
+  background:#1f2733;
+  border:1px solid #3a4556;
   color:var(--tx);
   font-family:var(--mono);
   font-size:18px;
   font-weight:700;
   text-align:center;
   letter-spacing:1px;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.4);
+  transition:all .2s;
 }
-.mass-input:focus{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
-.mass-input::placeholder{color:var(--dim);font-size:13px}
+.mass-input:focus{
+  border-color:var(--amber);
+  background:#252e3c;
+  box-shadow:0 0 0 1px var(--amber), inset 0 2px 8px rgba(0,0,0,.4), 0 0 16px rgba(251,191,36,.1);
+}
+.mass-input::placeholder{color:#5a6473;font-size:13px}
 .mass-result{
   background:var(--bg);
   border:1px solid var(--line2);
@@ -612,7 +620,7 @@ input{outline:none}
     <div class="brand-left">
       <div class="brand-mark">⛏</div>
       <div class="brand-text">
-        <div class="brand-name">FRONTIER</div>
+        <div class="brand-name">MINERSCAN</div>
         <div class="brand-sub">Mining Scanner v2.0</div>
       </div>
     </div>
@@ -733,7 +741,7 @@ input{outline:none}
 </div>
 
 <div class="footer">
-  <div class="line uppercase">⛏ Frontier Mining Scanner</div>
+  <div class="line uppercase">⛏ MinerScan</div>
   <div class="line">Star Citizen Alpha 4.7 · Data: SCMDB</div>
   <div class="line uppercase" style="margin-top:8px">Community tool · Not affiliated with CIG</div>
 </div>
