@@ -3,330 +3,1165 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>SC Scan Identifier</title>
+<title>SC Scan ID</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛏</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'JetBrains Mono','Fira Code','Consolas',monospace;background:#0a0e17;color:#e2e8f0;min-height:100vh;max-width:600px;margin:0 auto;padding:0 0 40px}
-.header{background:#111827;border-bottom:1px solid #1e293b;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;color:#3b82f6}
-.sub{font-size:10px;color:#64748b}
 
-.search-box{padding:16px;background:#111827;border-bottom:1px solid #1e293b}
-.search-label{font-size:11px;color:#94a3b8;margin-bottom:8px;display:block}
-.search-input{width:100%;padding:14px 16px;border-radius:12px;font-size:18px;font-family:inherit;border:2px solid #1e293b;background:#1a2236;color:#e2e8f0;outline:none;text-align:center;letter-spacing:1px}
-.search-input:focus{border-color:#3b82f6}
-.search-input::placeholder{color:#475569;font-size:14px;letter-spacing:0}
-.hint{font-size:10px;color:#475569;margin-top:8px;text-align:center}
+:root{
+  --bg:#070a10;
+  --bg2:#0d1118;
+  --bg3:#13181f;
+  --panel:#181d26;
+  --line:#1f2530;
+  --line2:#2a3140;
+  --tx:#e8eef5;
+  --tx2:#9ca5b3;
+  --tx3:#5a6473;
+  --dim:#3a4150;
+  --amber:#fbbf24;
+  --amber-dim:#92660a;
+  --green:#4ade80;
+  --red:#f87171;
+  --blue:#60a5fa;
 
-.results{padding:8px 0}
-.no-results{text-align:center;padding:40px 16px;color:#475569}
-.no-results .icon{font-size:32px;margin-bottom:8px}
+  --r-leg:#fbbf24;
+  --r-epic:#ec4899;
+  --r-rare:#60a5fa;
+  --r-unc:#4ade80;
+  --r-com:#94a3b8;
+  --r-roc:#e2e8f0;
+  --r-fps:#a855f7;
+  --r-sal:#92400e;
 
-.result{border-bottom:1px solid #1e293b;padding:12px 16px;display:flex;align-items:center;gap:12px}
-.result.exact{background:rgba(59,130,246,.08)}
-.result.approx{background:rgba(245,158,11,.05)}
+  --mono:'JetBrains Mono',ui-monospace,'Cascadia Code','SF Mono',monospace;
+  --display:'Orbitron',var(--mono);
+}
 
-.rarity-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.rarity-legendary{background:#f59e0b}
-.rarity-epic{background:#ec4899}
-.rarity-rare{background:#60a5fa}
-.rarity-uncommon{background:#22c55e}
-.rarity-common{background:#94a3b8}
-.rarity-roc{background:#e2e8f0}
-.rarity-fps{background:#a855f7}
-.rarity-salvage{background:#92400e}
+html,body{background:var(--bg);color:var(--tx);font-family:var(--mono);font-size:13px;min-height:100vh}
+body{
+  max-width:640px;
+  margin:0 auto;
+  padding-bottom:60px;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(251,191,36,.04), transparent 70%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+  background-attachment:fixed;
+  position:relative;
+}
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(251,191,36,.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(251,191,36,.015) 1px, transparent 1px);
+  background-size:24px 24px;
+  pointer-events:none;
+  z-index:0;
+}
+#app{position:relative;z-index:1}
+
+a{color:var(--amber)}
+button,input{font-family:inherit;color:inherit}
+input{outline:none}
+
+.header{
+  padding:18px 20px 14px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(251,191,36,.03), transparent);
+  position:relative;
+}
+.header::after{
+  content:'';
+  position:absolute;
+  bottom:-1px;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg, transparent, var(--amber), transparent);
+  opacity:.4;
+}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand-left{display:flex;align-items:center;gap:12px}
+.brand-mark{
+  width:36px;height:36px;
+  border:1px solid var(--amber);
+  background:rgba(251,191,36,.08);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+  position:relative;
+  clip-path:polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+}
+.brand-text{display:flex;flex-direction:column;line-height:1}
+.brand-name{
+  font-family:var(--display);
+  font-weight:900;
+  font-size:15px;
+  letter-spacing:2px;
+  color:var(--tx);
+}
+.brand-sub{
+  font-size:9px;
+  color:var(--tx3);
+  letter-spacing:2.5px;
+  margin-top:4px;
+  text-transform:uppercase;
+}
+.brand-status{
+  display:flex;align-items:center;gap:6px;
+  font-size:9px;
+  color:var(--green);
+  letter-spacing:1.5px;
+}
+.brand-status .pulse{
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--green);
+  animation:pulse 2s infinite;
+  box-shadow:0 0 8px var(--green);
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.tabs{
+  display:flex;
+  background:var(--bg2);
+  border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(8px);
+}
+.tab{
+  flex:1;
+  padding:14px 0;
+  border:none;
+  background:transparent;
+  color:var(--tx3);
+  font-family:var(--display);
+  font-weight:700;
+  font-size:11px;
+  letter-spacing:2.5px;
+  cursor:pointer;
+  position:relative;
+  transition:color .2s;
+  min-height:48px;
+}
+.tab:hover{color:var(--tx2)}
+.tab.active{color:var(--amber)}
+.tab.active::after{
+  content:'';
+  position:absolute;
+  bottom:0;left:20%;right:20%;
+  height:2px;
+  background:var(--amber);
+  box-shadow:0 0 8px var(--amber);
+}
+
+.panel{
+  margin:16px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  position:relative;
+}
+.panel::before{
+  content:'';
+  position:absolute;
+  top:-1px;left:-1px;
+  width:14px;height:14px;
+  border-top:1px solid var(--amber);
+  border-left:1px solid var(--amber);
+}
+.panel::after{
+  content:'';
+  position:absolute;
+  bottom:-1px;right:-1px;
+  width:14px;height:14px;
+  border-bottom:1px solid var(--amber);
+  border-right:1px solid var(--amber);
+}
+.panel-header{
+  padding:10px 14px;
+  border-bottom:1px solid var(--line);
+  background:var(--bg3);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-title{
+  font-family:var(--display);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:2px;
+  color:var(--amber);
+  text-transform:uppercase;
+}
+.panel-meta{
+  font-size:9px;
+  color:var(--tx3);
+  letter-spacing:1.5px;
+}
+.panel-body{padding:14px}
+
+.input-block{position:relative}
+.input-label{
+  font-size:9px;
+  color:var(--tx3);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:8px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.input-label .badge{
+  background:rgba(251,191,36,.1);
+  border:1px solid var(--amber-dim);
+  color:var(--amber);
+  padding:2px 6px;
+  font-size:8px;
+}
+.scan-input{
+  width:100%;
+  padding:18px 16px;
+  background:var(--bg);
+  border:1px solid var(--line2);
+  color:var(--amber);
+  font-family:var(--mono);
+  font-size:24px;
+  font-weight:700;
+  text-align:center;
+  letter-spacing:3px;
+  caret-color:var(--amber);
+  transition:border-color .2s;
+}
+.scan-input:focus{
+  border-color:var(--amber);
+  box-shadow:0 0 0 1px var(--amber), inset 0 0 20px rgba(251,191,36,.05);
+}
+.scan-input::placeholder{
+  color:var(--dim);
+  font-size:14px;
+  letter-spacing:1px;
+  font-weight:500;
+}
+.input-hints{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+  font-size:9px;
+  color:var(--tx3);
+  letter-spacing:1px;
+}
+.input-hints .key{
+  color:var(--tx2);
+  background:var(--bg);
+  padding:2px 5px;
+  border:1px solid var(--line2);
+}
+
+.mass-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.mass-input{
+  width:100%;
+  padding:14px 12px;
+  background:var(--bg);
+  border:1px solid var(--line2);
+  color:var(--tx);
+  font-family:var(--mono);
+  font-size:18px;
+  font-weight:700;
+  text-align:center;
+  letter-spacing:1px;
+}
+.mass-input:focus{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
+.mass-input::placeholder{color:var(--dim);font-size:13px}
+.mass-result{
+  background:var(--bg);
+  border:1px solid var(--line2);
+  padding:24px 16px;
+  text-align:center;
+  position:relative;
+}
+.mass-result::before{
+  content:'OUTPUT';
+  position:absolute;
+  top:-7px;left:14px;
+  background:var(--panel);
+  padding:0 8px;
+  font-size:8px;
+  letter-spacing:2px;
+  color:var(--tx3);
+}
+.mass-result-label{
+  font-size:9px;
+  letter-spacing:2px;
+  color:var(--tx3);
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.mass-result-value{
+  font-family:var(--display);
+  font-size:42px;
+  font-weight:900;
+  color:var(--amber);
+  letter-spacing:1px;
+  line-height:1;
+  text-shadow:0 0 20px rgba(251,191,36,.3);
+}
+.mass-result-unit{
+  font-size:14px;
+  color:var(--tx2);
+  margin-top:8px;
+  letter-spacing:1px;
+}
+.mass-formula{
+  margin-top:14px;
+  padding:10px;
+  background:var(--bg);
+  border-left:2px solid var(--amber);
+  font-size:11px;
+  color:var(--tx2);
+  text-align:center;
+  letter-spacing:.5px;
+}
+.mass-formula .v{color:var(--amber);font-weight:700}
+
+.results-meta{
+  padding:10px 16px;
+  font-size:9px;
+  color:var(--tx3);
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  display:flex;align-items:center;justify-content:space-between;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  background:var(--bg2);
+}
+.results-meta .count{color:var(--amber)}
+
+.result-row{
+  padding:11px 16px;
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:12px;
+  position:relative;
+}
+.result-row.exact{background:linear-gradient(90deg, rgba(251,191,36,.06), transparent)}
+.result-row.exact::before{
+  content:'';
+  position:absolute;
+  left:0;top:0;bottom:0;width:2px;
+  background:var(--amber);
+  box-shadow:0 0 8px var(--amber);
+}
+.result-row.approx{background:rgba(251,191,36,.02)}
+.result-row.range{background:rgba(96,165,250,.02)}
+
+.result-rarity-bar{
+  width:3px;
+  align-self:stretch;
+  flex-shrink:0;
+}
+.bar-legendary{background:var(--r-leg)}
+.bar-epic{background:var(--r-epic)}
+.bar-rare{background:var(--r-rare)}
+.bar-uncommon{background:var(--r-unc)}
+.bar-common{background:var(--r-com)}
+.bar-roc{background:var(--r-roc)}
+.bar-fps{background:var(--r-fps)}
+.bar-salvage{background:var(--r-sal)}
 
 .result-info{flex:1;min-width:0}
-.result-name{font-weight:700;font-size:14px}
-.result-detail{font-size:11px;color:#64748b;margin-top:2px}
-.result-rarity{font-size:10px;text-transform:uppercase;letter-spacing:.5px}
-.rarity-legendary .result-rarity{color:#f59e0b}
-.rarity-epic .result-rarity{color:#ec4899}
-.rarity-rare .result-rarity{color:#60a5fa}
-.rarity-uncommon .result-rarity{color:#22c55e}
-.rarity-common .result-rarity{color:#94a3b8}
+.result-name{
+  font-size:14px;
+  font-weight:700;
+  color:var(--tx);
+  letter-spacing:.3px;
+}
+.result-meta{
+  font-size:10px;
+  color:var(--tx3);
+  margin-top:2px;
+  letter-spacing:.5px;
+  display:flex;gap:8px;align-items:center;
+}
+.result-meta .rarity-tag{
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  font-weight:700;
+  font-size:9px;
+}
+.tag-legendary{color:var(--r-leg)}
+.tag-epic{color:var(--r-epic)}
+.tag-rare{color:var(--r-rare)}
+.tag-uncommon{color:var(--r-unc)}
+.tag-common{color:var(--r-com)}
+.tag-roc{color:var(--r-roc)}
+.tag-fps{color:var(--r-fps)}
+.tag-salvage{color:var(--r-sal)}
 
-.result-sig{text-align:right;flex-shrink:0}
-.result-sig-val{font-weight:700;font-size:14px;color:#3b82f6}
-.result-sig-rocks{font-size:10px;color:#64748b}
-.result-match{font-size:9px;padding:2px 6px;border-radius:4px;margin-top:2px;display:inline-block}
-.match-exact{background:rgba(59,130,246,.2);color:#60a5fa}
-.match-approx{background:rgba(245,158,11,.2);color:#fbbf24}
-.match-range{background:rgba(34,197,94,.2);color:#4ade80}
+.result-sig{text-align:right;flex-shrink:0;font-family:var(--mono)}
+.result-sig-val{
+  font-size:15px;
+  font-weight:700;
+  color:var(--amber);
+  letter-spacing:.5px;
+  line-height:1;
+}
+.result-sig-cluster{
+  font-size:9px;
+  color:var(--tx3);
+  margin-top:4px;
+  letter-spacing:1px;
+}
+.match-badge{
+  display:inline-block;
+  font-size:8px;
+  padding:2px 5px;
+  margin-top:5px;
+  letter-spacing:1.2px;
+  font-weight:700;
+}
+.badge-exact{background:rgba(251,191,36,.15);color:var(--amber);border:1px solid var(--amber-dim)}
+.badge-approx{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+.badge-range{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.3)}
 
-.section-title{padding:8px 16px;font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;background:#0d1220;border-bottom:1px solid #1e293b}
+.pool-row{
+  padding:8px 16px;
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;
+  font-size:12px;
+}
+.pool-row.exact{background:linear-gradient(90deg, rgba(251,191,36,.06), transparent)}
+.pool-name{
+  flex:1;
+  color:var(--tx2);
+  font-size:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.pool-name .x-rocks{color:var(--tx3);font-size:10px}
+.pool-sig{
+  font-family:var(--mono);
+  font-size:13px;
+  font-weight:700;
+  color:var(--amber);
+  letter-spacing:.5px;
+}
 
-.ref-toggle{padding:12px 16px;text-align:center}
-.ref-toggle button{padding:10px 20px;border-radius:10px;font-size:12px;font-family:inherit;border:2px solid #1e293b;background:#1a2236;color:#94a3b8;cursor:pointer;min-height:44px}
-.ref-toggle button.active{border-color:#3b82f6;background:rgba(59,130,246,.15);color:#3b82f6}
+.empty-state{
+  padding:50px 20px;
+  text-align:center;
+  color:var(--tx3);
+}
+.empty-state .icon{
+  font-size:32px;
+  margin-bottom:10px;
+  opacity:.4;
+  display:block;
+}
+.empty-state .label{
+  font-size:11px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
 
-.ref-table{padding:0 8px 16px}
-.ref-row{display:flex;align-items:center;padding:6px 8px;border-bottom:1px solid #1e293b08;gap:8px}
-.ref-row:nth-child(odd){background:rgba(255,255,255,.01)}
-.ref-name{flex:1;font-size:12px}
-.ref-base{font-size:11px;color:#3b82f6;width:50px;text-align:right}
-.ref-max{font-size:10px;color:#475569;width:40px;text-align:right}
+.legend{padding:14px 16px;background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.legend-section{margin-bottom:10px}
+.legend-section:last-child{margin-bottom:0}
+.legend-title{
+  font-size:9px;
+  color:var(--tx3);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.legend-grid{display:flex;flex-wrap:wrap;gap:6px 14px}
+.legend-item{
+  display:flex;align-items:center;gap:5px;
+  font-size:10px;
+  color:var(--tx2);
+  letter-spacing:.5px;
+}
+.legend-dot{width:8px;height:8px;flex-shrink:0;border-radius:50%}
 
-.footer{text-align:center;padding:20px 16px;font-size:10px;color:#334155;border-top:1px solid #1e293b;margin-top:16px}
-.legend{padding:12px 16px;background:#0d1220;border-bottom:1px solid #1e293b}
-.legend-title{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.legend-grid{display:flex;flex-wrap:wrap;gap:6px 16px}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#94a3b8}
-.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ref-toggle{padding:14px 16px;text-align:center}
+.ref-btn{
+  padding:11px 22px;
+  background:var(--bg2);
+  border:1px solid var(--line2);
+  color:var(--tx2);
+  font-family:var(--display);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:2px;
+  cursor:pointer;
+  text-transform:uppercase;
+  min-height:44px;
+  transition:all .2s;
+}
+.ref-btn:hover{border-color:var(--amber);color:var(--amber)}
+.ref-btn.active{
+  background:rgba(251,191,36,.1);
+  border-color:var(--amber);
+  color:var(--amber);
+}
+
+.ref-table-wrap{
+  margin:0 16px 16px;
+  overflow-x:auto;
+  border:1px solid var(--line);
+  background:var(--panel);
+  position:relative;
+}
+.ref-table{
+  border-collapse:collapse;
+  font-family:var(--mono);
+  font-size:10px;
+  width:100%;
+  min-width:max-content;
+}
+.ref-table thead{background:var(--bg3)}
+.ref-table th{
+  padding:8px 6px;
+  border-bottom:1px solid var(--line2);
+  font-family:var(--display);
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:1px;
+  color:var(--amber);
+  text-transform:uppercase;
+}
+.ref-table th.col-name{
+  text-align:left;padding-left:12px;
+  position:sticky;left:0;
+  background:var(--bg3);
+  border-right:1px solid var(--line2);
+  z-index:2;
+}
+.ref-table th.col-num{text-align:right;padding-right:10px;color:var(--tx3)}
+.ref-table td{
+  padding:6px;
+  border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+.ref-table td.cell-name{
+  text-align:left;padding-left:12px;
+  position:sticky;left:0;
+  background:var(--panel);
+  border-right:1px solid var(--line2);
+  font-weight:700;
+  color:var(--tx);
+}
+.ref-table td.cell-name .ref-dot{display:inline-block;vertical-align:middle;margin-right:6px}
+.ref-table tr:nth-child(even) td.cell-name{background:var(--bg3)}
+.ref-table tr:nth-child(even) td{background:rgba(255,255,255,.01)}
+.ref-table td.cell-sig{
+  text-align:right;
+  padding-right:10px;
+  color:var(--tx2);
+  font-variant-numeric:tabular-nums;
+}
+.ref-table td.cell-sig.first{color:var(--amber);font-weight:700}
+.ref-table .ref-dot{width:7px;height:7px;border-radius:50%}
+
+.ref-other{margin:0 16px 16px;background:var(--panel);border:1px solid var(--line)}
+.ref-other-header{
+  padding:10px 14px;
+  background:var(--bg3);
+  border-bottom:1px solid var(--line);
+  font-family:var(--display);
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:2px;
+  color:var(--amber);
+  text-transform:uppercase;
+}
+.ref-other-row{
+  padding:10px 14px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--line);
+}
+.ref-other-row:last-child{border-bottom:none}
+.ref-other-name{flex:1;font-size:11px;display:flex;align-items:center;gap:8px}
+.ref-other-formula{font-size:10px;color:var(--tx3);font-family:var(--mono)}
+.ref-other-formula b{color:var(--amber)}
+
+.footer{
+  text-align:center;
+  padding:30px 16px 20px;
+  color:var(--tx3);
+  font-size:9px;
+  letter-spacing:1.5px;
+  border-top:1px solid var(--line);
+  margin-top:20px;
+}
+.footer .line{margin:4px 0}
+.footer .uppercase{text-transform:uppercase;color:var(--dim)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeUp .25s ease-out}
+
+@media(max-width:480px){
+  .panel{margin:12px}
+  .mass-result-value{font-size:36px}
+  .scan-input{font-size:20px;padding:16px 12px}
+  .ref-table{font-size:9px}
+  .ref-table th,.ref-table td{padding:5px 4px}
+}
 </style>
 </head>
 <body>
 <div id="app">
 
 <div class="header">
-  <div class="logo">⛏ SC Scan ID</div>
-  <div class="sub">Signature Identifier</div>
+  <div class="brand">
+    <div class="brand-left">
+      <div class="brand-mark">⛏</div>
+      <div class="brand-text">
+        <div class="brand-name">FRONTIER</div>
+        <div class="brand-sub">Mining Scanner v2.0</div>
+      </div>
+    </div>
+    <div class="brand-status">
+      <div class="pulse"></div>
+      <span>ONLINE</span>
+    </div>
+  </div>
 </div>
 
-<div class="search-box">
-  <label class="search-label">Enter scan signature value</label>
-  <input class="search-input" id="scanInput" type="text" inputmode="text" placeholder="8600, ~5000, 4000-7500" autofocus>
-  <div class="hint">Exact · ~value ±10% · min-max range</div>
+<div class="tabs">
+  <button class="tab active" id="tab-scan" onclick="switchTab('scan')">◊ SCAN ID</button>
+  <button class="tab" id="tab-mass" onclick="switchTab('mass')">◊ MASS CALC</button>
 </div>
 
-<div id="results" class="results"></div>
+<div id="view-scan">
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title">▸ Signature Input</div>
+    <div class="panel-meta">RS SCAN</div>
+  </div>
+  <div class="panel-body">
+    <div class="input-block">
+      <div class="input-label">
+        <span>Scanner Reading</span>
+        <span class="badge">LIVE FILTER</span>
+      </div>
+      <input class="scan-input" id="scanInput" type="text" inputmode="numeric" placeholder="0000" autocomplete="off">
+      <div class="input-hints">
+        <span>min 3 digits</span>
+        <span>or <span class="key">4000-7500</span> for range</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="results"></div>
 
 <div class="legend">
-  <div class="legend-title">Ship Mining</div>
-  <div class="legend-grid">
-    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Legendary</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#ec4899"></div>Epic</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Rare</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Uncommon</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Common</div>
+  <div class="legend-section">
+    <div class="legend-title">▸ Ship Mining</div>
+    <div class="legend-grid">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--r-leg)"></div>Legendary</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--r-epic)"></div>Epic</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--r-rare)"></div>Rare</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--r-unc)"></div>Uncommon</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--r-com)"></div>Common</div>
+    </div>
   </div>
-  <div class="legend-title" style="margin-top:10px">Other</div>
-  <div class="legend-grid">
-    <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div>ROC Mineable</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>FPS Mineable</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#92400e"></div>Salvage</div>
+  <div class="legend-section">
+    <div class="legend-title">▸ Other Mining</div>
+    <div class="legend-grid">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--r-roc)"></div>ROC Mineable</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--r-fps)"></div>FPS Mineable</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--r-sal)"></div>Salvage</div>
+    </div>
   </div>
 </div>
 
 <div class="ref-toggle">
-  <button id="refBtn" onclick="toggleRef()">Show Full Reference Table</button>
+  <button class="ref-btn" id="refBtn" onclick="toggleRef()">▾ Show Reference Grid</button>
 </div>
 <div id="refTable" style="display:none"></div>
 
+</div>
+
+<div id="view-mass" style="display:none">
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title">▸ Valuable Mass Calculator</div>
+    <div class="panel-meta">SCU YIELD</div>
+  </div>
+  <div class="panel-body">
+
+    <div class="mass-grid">
+      <div>
+        <div class="input-label"><span>Rock Mass</span></div>
+        <input class="mass-input" id="massRock" type="text" inputmode="decimal" placeholder="32" autocomplete="off">
+        <div style="text-align:center;font-size:9px;color:var(--tx3);letter-spacing:1.5px;margin-top:6px;text-transform:uppercase">SCU</div>
+      </div>
+      <div>
+        <div class="input-label"><span>Valuable %</span></div>
+        <input class="mass-input" id="massPct" type="text" inputmode="decimal" placeholder="6.0" autocomplete="off">
+        <div style="text-align:center;font-size:9px;color:var(--tx3);letter-spacing:1.5px;margin-top:6px;text-transform:uppercase">PERCENT</div>
+      </div>
+    </div>
+
+    <div class="mass-result">
+      <div class="mass-result-label">Valuable Yield</div>
+      <div class="mass-result-value" id="massResult">—</div>
+      <div class="mass-result-unit">SCU</div>
+    </div>
+
+    <div class="mass-formula" id="massFormula">
+      Enter rock mass and valuable percentage
+    </div>
+
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title">▸ Quick Reference</div>
+    <div class="panel-meta">HOW IT WORKS</div>
+  </div>
+  <div class="panel-body" style="font-size:11px;color:var(--tx2);line-height:1.7">
+    <div>• Read both <b style="color:var(--amber)">Mass</b> and <b style="color:var(--amber)">Valuable %</b> from in-game scanner</div>
+    <div>• Yield = Mass × Percent ÷ 100</div>
+    <div>• Higher % = better extraction targets</div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:10px;color:var(--tx3)">
+      Example: 32 SCU rock × 6% = <b style="color:var(--amber)">1.92 SCU</b> valuable ore
+    </div>
+  </div>
+</div>
+
+</div>
+
 <div class="footer">
-  SC Scan Signature Identifier · Star Citizen 4.7<br>
-  Data source: SCMDB · Community tool · Not affiliated with CIG
+  <div class="line uppercase">⛏ Frontier Mining Scanner</div>
+  <div class="line">Star Citizen Alpha 4.7 · Data: SCMDB</div>
+  <div class="line uppercase" style="margin-top:8px">Community tool · Not affiliated with CIG</div>
 </div>
 
 </div>
 
 <script>
-// ═══ ORE DATABASE ═══
-// [name, base_signature, max_rocks, rarity, type]
+// ═══════════════════════════════════════════════
+// ORE DATABASE — sorted to match in-game reference
+// (common at top → legendary at bottom)
+// ═══════════════════════════════════════════════
+// [name, base, maxRocks, rarity]
 const ORES = [
-  // Ship Mining - Legendary (max 2)
-  ["Quantainium", 3170, 2, "legendary", "ship"],
-  ["Stileron", 3185, 2, "legendary", "ship"],
-  ["Savrilium", 3200, 2, "legendary", "ship"],
-  // Ship Mining - Epic (max 3)
-  ["Ouratite", 3370, 3, "epic", "ship"],
-  ["Riccite", 3385, 3, "epic", "ship"],
-  ["Lindinium", 3400, 3, "epic", "ship"],
-  // Ship Mining - Rare (max 4)
-  ["Beryl", 3540, 4, "rare", "ship"],
-  ["Taranite", 3555, 4, "rare", "ship"],
-  ["Borase", 3570, 4, "rare", "ship"],
-  ["Gold", 3585, 4, "rare", "ship"],
-  ["Bexalite", 3600, 4, "rare", "ship"],
-  // Ship Mining - Uncommon (max 5)
-  ["Laranite", 3825, 5, "uncommon", "ship"],
-  ["Aslarite", 3840, 5, "uncommon", "ship"],
-  ["Titanium", 3855, 5, "uncommon", "ship"],
-  ["Tungsten", 3870, 5, "uncommon", "ship"],
-  ["Agricium", 3885, 5, "uncommon", "ship"],
-  ["Torite", 3900, 5, "uncommon", "ship"],
-  // Ship Mining - Common (max 6)
-  ["Hephaestanite", 4180, 6, "common", "ship"],
-  ["Tin", 4195, 6, "common", "ship"],
-  ["Quartz", 4210, 6, "common", "ship"],
-  ["Corundum", 4225, 6, "common", "ship"],
-  ["Copper", 4240, 6, "common", "ship"],
-  ["Silicon", 4255, 6, "common", "ship"],
-  ["Iron", 4270, 6, "common", "ship"],
-  ["Aluminium", 4285, 6, "common", "ship"],
-  ["Ice", 4300, 6, "common", "ship"],
-  // ROC Mining (max 7)
-  ["Beradom (ROC)", 4000, 7, "roc", "roc"],
-  ["Carinite (ROC)", 4000, 7, "roc", "roc"],
-  ["Feynmaline (ROC)", 4000, 7, "roc", "roc"],
-  ["Glacosite (ROC)", 4000, 7, "roc", "roc"],
-  // FPS Mining (max 10)
-  ["Aphorite", 3000, 10, "fps", "fps"],
-  ["Carinite (FPS)", 3000, 10, "fps", "fps"],
-  ["Carinite Pure", 3000, 10, "fps", "fps"],
-  ["Dolivine", 3000, 10, "fps", "fps"],
-  ["Hadanite", 3000, 10, "fps", "fps"],
-  ["Jaclium", 3000, 10, "fps", "fps"],
-  ["Janalite", 3000, 10, "fps", "fps"],
-  ["Sadaryx", 3000, 10, "fps", "fps"],
-  ["Saldynium", 3000, 10, "fps", "fps"],
-  // Salvage (max 15)
-  ["Salvage (Wrecks/Debris)", 2000, 15, "salvage", "salvage"],
+  // Common
+  ["Ice",           4300, 10, "common"],
+  ["Aluminium",     4285, 10, "common"],
+  ["Iron",          4270, 10, "common"],
+  ["Silicon",       4255, 10, "common"],
+  ["Copper",        4240, 10, "common"],
+  ["Corundum",      4225, 10, "common"],
+  ["Quartz",        4210, 10, "common"],
+  ["Tin",           4195, 10, "common"],
+  ["Hephaestanite", 4180, 10, "common"],
+  // Uncommon
+  ["Torite",        3900, 10, "uncommon"],
+  ["Agricium",      3885, 10, "uncommon"],
+  ["Tungsten",      3870, 10, "uncommon"],
+  ["Titanium",      3855, 10, "uncommon"],
+  ["Aslarite",      3840, 10, "uncommon"],
+  ["Laranite",      3825, 10, "uncommon"],
+  // Rare
+  ["Bexalite",      3600, 10, "rare"],
+  ["Gold",          3585, 10, "rare"],
+  ["Borase",        3570, 10, "rare"],
+  ["Taranite",      3555, 10, "rare"],
+  ["Beryl",         3540, 10, "rare"],
+  // Epic
+  ["Lindinium",     3400, 10, "epic"],
+  ["Riccite",       3385, 10, "epic"],
+  ["Ouratite",      3370, 10, "epic"],
+  // Legendary
+  ["Savrilium",     3200, 10, "legendary"],
+  ["Stileron",      3185, 10, "legendary"],
+  ["Quantainium",   3170, 10, "legendary"],
 ];
 
-// ═══ SEARCH ENGINE ═══
+// Other mining categories — generic match (no specific ore name)
+const OTHER_MINING = [
+  { type: "roc",     label: "ROC Mineable", base: 4000, maxRocks: 30 },
+  { type: "fps",     label: "FPS Mineable", base: 3000, maxRocks: 30 },
+  { type: "salvage", label: "Salvage",      base: 2000, maxRocks: 20 },
+];
+
+// ═══════════════════════════════════════════════
+// QUERY PARSING
+// ═══════════════════════════════════════════════
 function parseQuery(raw) {
-  const s = raw.trim();
+  const s = String(raw).trim();
   if (!s) return null;
 
   // Range: "4000-7500"
   const rangeMatch = s.match(/^(\d+)\s*[-–]\s*(\d+)$/);
-  if (rangeMatch) return { type: "range", min: parseInt(rangeMatch[1]), max: parseInt(rangeMatch[2]) };
+  if (rangeMatch) {
+    const a = parseInt(rangeMatch[1]);
+    const b = parseInt(rangeMatch[2]);
+    return { type: "range", min: Math.min(a, b), max: Math.max(a, b) };
+  }
 
-  // Approx: "~5000"
-  const approxMatch = s.match(/^~\s*(\d+)$/);
-  if (approxMatch) { const v = parseInt(approxMatch[1]); return { type: "approx", min: Math.floor(v * 0.9), max: Math.ceil(v * 1.1), center: v }; }
-
-  // Exact
-  const exactMatch = s.match(/^(\d+)$/);
-  if (exactMatch) return { type: "exact", value: parseInt(exactMatch[1]) };
+  // Plain number → exact match only
+  const numMatch = s.match(/^(\d+)$/);
+  if (numMatch) {
+    const v = parseInt(numMatch[1]);
+    return { type: "exact", value: v };
+  }
 
   return null;
 }
 
+// ═══════════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════════
 function search(query) {
   const q = parseQuery(query);
-  if (!q) return [];
+  if (!q) return { results: [], query: null };
 
   const results = [];
+  const prefixStr = q.type === "prefix" ? String(q.value) : null;
 
-  ORES.forEach(([name, base, maxRocks, rarity, type]) => {
+  // Ship mining ores
+  ORES.forEach(([name, base, maxRocks, rarity]) => {
     for (let rocks = 1; rocks <= maxRocks; rocks++) {
       const sig = base * rocks;
       let match = null;
 
-      if (q.type === "exact" && sig === q.value) {
-        match = "exact";
-      } else if (q.type === "approx" && sig >= q.min && sig <= q.max) {
-        match = sig === q.center ? "exact" : "approx";
-      } else if (q.type === "range" && sig >= q.min && sig <= q.max) {
-        match = "range";
+      if (q.type === "range") {
+        if (sig >= q.min && sig <= q.max) match = "range";
+      } else if (q.type === "exact") {
+        if (sig === q.value) match = "exact";
+      } else if (q.type === "prefix") {
+        if (String(sig).startsWith(prefixStr)) match = "prefix";
       }
 
-      if (match) {
-        results.push({ name, base, rocks, sig, rarity, type, match });
-      }
+      if (match) results.push({ name, base, rocks, sig, rarity, type: "ship", match });
     }
   });
 
-  // Sort: exact first, then by signature
+  // Other mining (ROC/FPS/Salvage)
+  OTHER_MINING.forEach(o => {
+    for (let rocks = 1; rocks <= o.maxRocks; rocks++) {
+      const sig = o.base * rocks;
+      let match = null;
+
+      if (q.type === "range") {
+        if (sig >= q.min && sig <= q.max) match = "range";
+      } else if (q.type === "exact") {
+        if (sig === q.value) match = "exact";
+      } else if (q.type === "prefix") {
+        if (String(sig).startsWith(prefixStr)) match = "prefix";
+      }
+
+      if (match) results.push({
+        name: o.label, base: o.base, rocks, sig,
+        rarity: o.type, type: o.type, match
+      });
+    }
+  });
+
+  // Sort: exact first, then by sig
+  const order = { exact: 0, prefix: 1, range: 2 };
   results.sort((a, b) => {
-    const matchOrder = { exact: 0, approx: 1, range: 2 };
-    if (matchOrder[a.match] !== matchOrder[b.match]) return matchOrder[a.match] - matchOrder[b.match];
+    if (order[a.match] !== order[b.match]) return order[a.match] - order[b.match];
     return a.sig - b.sig;
   });
 
-  return results;
+  return { results, query: q };
 }
 
-// ═══ RENDER ═══
-const rarityColors = {
-  legendary: "#f59e0b", epic: "#ec4899", rare: "#60a5fa",
-  uncommon: "#22c55e", common: "#94a3b8", roc: "#e2e8f0",
-  fps: "#a855f7", salvage: "#92400e"
+// ═══════════════════════════════════════════════
+// RENDER RESULTS
+// ═══════════════════════════════════════════════
+const RARITY_LABELS = {
+  legendary: "Legendary",
+  epic: "Epic",
+  rare: "Rare",
+  uncommon: "Uncommon",
+  common: "Common",
+  roc: "ROC",
+  fps: "FPS",
+  salvage: "Salvage",
 };
-
-const rarityLabels = {
-  legendary: "Legendary", epic: "Epic", rare: "Rare",
-  uncommon: "Uncommon", common: "Common", roc: "ROC Mining",
-  fps: "FPS Mining", salvage: "Salvage"
-};
-
-const typeIcons = { ship: "🚀", roc: "🚜", fps: "⛏", salvage: "🛰" };
 
 function renderResults() {
-  const input = document.getElementById("scanInput").value;
+  const input = document.getElementById("scanInput").value.trim();
   const div = document.getElementById("results");
+  div.innerHTML = "";
 
-  if (!input.trim()) {
-    div.innerHTML = '<div class="no-results"><div class="icon">⛏</div>Enter a scan value to identify ores</div>';
-    return;
-  }
-
-  const q = parseQuery(input);
-  if (!q) {
-    div.innerHTML = '<div class="no-results"><div class="icon">❓</div>Use: exact number, ~number, or min-max</div>';
-    return;
-  }
-
-  const results = search(input);
-  if (!results.length) {
-    div.innerHTML = '<div class="no-results"><div class="icon">🔍</div>No matching ores found</div>';
-    return;
-  }
-
-  let html = '';
-  let lastRarity = null;
-
-  results.forEach(r => {
-    if (r.rarity !== lastRarity) {
-      html += `<div class="section-title">${typeIcons[r.type]} ${rarityLabels[r.rarity]}</div>`;
-      lastRarity = r.rarity;
-    }
-
-    const matchLabel = r.match === "exact" ? "EXACT" : r.match === "approx" ? "≈ APPROX" : "IN RANGE";
-    const matchClass = r.match === "exact" ? "match-exact" : r.match === "approx" ? "match-approx" : "match-range";
-
-    html += `
-      <div class="result ${r.match}">
-        <div class="rarity-dot rarity-${r.rarity}"></div>
-        <div class="result-info">
-          <div class="result-name">${r.name}</div>
-          <div class="result-detail">Base: ${r.base.toLocaleString()} · ${typeIcons[r.type]} ${r.type}</div>
-        </div>
-        <div class="result-sig">
-          <div class="result-sig-val">${r.sig.toLocaleString()}</div>
-          <div class="result-sig-rocks">${r.rocks} rock${r.rocks > 1 ? 's' : ''}</div>
-          <span class="result-match ${matchClass}">${matchLabel}</span>
-        </div>
+  if (!input) {
+    div.innerHTML = `
+      <div class="empty-state">
+        <span class="icon">⌬</span>
+        <div class="label">Awaiting Scanner Input</div>
       </div>`;
+    return;
+  }
+
+  const isRange = /^\d+\s*[-–]\s*\d+$/.test(input);
+  const isNumber = /^\d+$/.test(input);
+
+  // Plain number — need at least 3 digits
+  if (isNumber && input.length < 3) {
+    div.innerHTML = `
+      <div class="empty-state">
+        <span class="icon">▸ ${input}</span>
+        <div class="label">Need ${3 - input.length} more digit${3 - input.length > 1 ? 's' : ''}</div>
+      </div>`;
+    return;
+  }
+
+  if (!isNumber && !isRange) {
+    div.innerHTML = `
+      <div class="empty-state">
+        <span class="icon">⚠</span>
+        <div class="label">Use digits only · or range like 4000-7500</div>
+      </div>`;
+    return;
+  }
+
+  // Determine search mode: exact for full numbers (5+ digits), prefix for partial (3-4 digits)
+  // Heuristic: if input looks like a complete signature, try exact match first
+  let searchInput = input;
+  let useExact = false;
+
+  if (isNumber) {
+    // Try exact match first
+    const exactQuery = { type: "exact", value: parseInt(input), min: 0, max: 0 };
+    const exactResults = [];
+    ORES.forEach(([name, base, maxRocks, rarity]) => {
+      for (let rocks = 1; rocks <= maxRocks; rocks++) {
+        if (base * rocks === parseInt(input)) exactResults.push(true);
+      }
+    });
+    OTHER_MINING.forEach(o => {
+      for (let rocks = 1; rocks <= o.maxRocks; rocks++) {
+        if (o.base * rocks === parseInt(input)) exactResults.push(true);
+      }
+    });
+    useExact = exactResults.length > 0;
+  }
+
+  // Build query
+  let q;
+  if (isRange) {
+    q = parseQuery(input);
+  } else if (useExact) {
+    q = { type: "exact", value: parseInt(input) };
+  } else {
+    q = { type: "prefix", value: parseInt(input) };
+  }
+
+  // Run search
+  const results = [];
+  const prefixStr = q.type === "prefix" ? String(q.value) : null;
+
+  ORES.forEach(([name, base, maxRocks, rarity]) => {
+    for (let rocks = 1; rocks <= maxRocks; rocks++) {
+      const sig = base * rocks;
+      let match = null;
+      if (q.type === "range") {
+        if (sig >= q.min && sig <= q.max) match = "range";
+      } else if (q.type === "exact") {
+        if (sig === q.value) match = "exact";
+      } else if (q.type === "prefix") {
+        if (String(sig).startsWith(prefixStr)) match = "prefix";
+      }
+      if (match) results.push({ name, base, rocks, sig, rarity, type: "ship", match });
+    }
   });
 
+  OTHER_MINING.forEach(o => {
+    for (let rocks = 1; rocks <= o.maxRocks; rocks++) {
+      const sig = o.base * rocks;
+      let match = null;
+      if (q.type === "range") {
+        if (sig >= q.min && sig <= q.max) match = "range";
+      } else if (q.type === "exact") {
+        if (sig === q.value) match = "exact";
+      } else if (q.type === "prefix") {
+        if (String(sig).startsWith(prefixStr)) match = "prefix";
+      }
+      if (match) results.push({
+        name: o.label, base: o.base, rocks, sig,
+        rarity: o.type, type: o.type, match
+      });
+    }
+  });
+
+  // Sort by signature
+  results.sort((a, b) => a.sig - b.sig);
+
+  if (!results.length) {
+    div.innerHTML = `
+      <div class="empty-state">
+        <span class="icon">∅</span>
+        <div class="label">No matching signatures</div>
+      </div>`;
+    return;
+  }
+
+  // Meta header
+  let metaText;
+  if (q.type === "range") {
+    metaText = `Range ${q.min.toLocaleString()} – ${q.max.toLocaleString()}`;
+  } else if (q.type === "exact") {
+    metaText = `Exact match · ${q.value.toLocaleString()}`;
+  } else {
+    metaText = `Starts with ${q.value.toLocaleString()}…`;
+  }
+
+  let html = `
+    <div class="results-meta">
+      <span>${metaText}</span>
+      <span class="count">${results.length} match${results.length > 1 ? 'es' : ''}</span>
+    </div>`;
+
+  // Show full detail rows for exact match (always small set)
+  // Show compact pool rows for prefix/range (potentially many)
+  if (q.type === "exact") {
+    results.forEach(r => { html += renderResultRow(r); });
+  } else {
+    results.forEach(r => { html += renderPoolRow(r); });
+  }
+
   div.innerHTML = html;
+  div.classList.add("fade-in");
+  setTimeout(() => div.classList.remove("fade-in"), 300);
 }
 
-// ═══ REFERENCE TABLE ═══
+function renderResultRow(r) {
+  const matchBadge = r.match === "exact" ? "EXACT MATCH" : "IN RANGE";
+  const matchClass = r.match === "exact" ? "badge-exact" : "badge-range";
+
+  return `
+    <div class="result-row ${r.match}">
+      <div class="result-rarity-bar bar-${r.rarity}"></div>
+      <div class="result-info">
+        <div class="result-name">${r.name}</div>
+        <div class="result-meta">
+          <span class="rarity-tag tag-${r.rarity}">${RARITY_LABELS[r.rarity]}</span>
+          <span>·</span>
+          <span>Base ${r.base.toLocaleString()}</span>
+        </div>
+      </div>
+      <div class="result-sig">
+        <div class="result-sig-val">${r.sig.toLocaleString()}</div>
+        <div class="result-sig-cluster">×${r.rocks} ROCK${r.rocks > 1 ? 'S' : ''}</div>
+        <span class="match-badge ${matchClass}">${matchBadge}</span>
+      </div>
+    </div>`;
+}
+
+function renderPoolRow(r) {
+  return `
+    <div class="pool-row ${r.match}">
+      <div class="result-rarity-bar bar-${r.rarity}"></div>
+      <div class="pool-name">
+        <span>${r.name} <span class="x-rocks">×${r.rocks}</span></span>
+      </div>
+      <div>
+        <span class="pool-sig">${r.sig.toLocaleString()}</span>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// REFERENCE TABLE (full grid)
+// ═══════════════════════════════════════════════
 let refVisible = false;
 function toggleRef() {
   refVisible = !refVisible;
   const btn = document.getElementById("refBtn");
   const div = document.getElementById("refTable");
-  btn.textContent = refVisible ? "Hide Reference Table" : "Show Full Reference Table";
-  btn.className = refVisible ? "active" : "";
+  btn.textContent = refVisible ? "▴ Hide Reference Grid" : "▾ Show Reference Grid";
+  btn.classList.toggle("active", refVisible);
 
   if (!refVisible) { div.style.display = "none"; return; }
 
+  const MAX_COLS = 10;
   let html = '';
-  let lastRarity = null;
-  ORES.forEach(([name, base, maxRocks, rarity, type]) => {
-    if (rarity !== lastRarity) {
-      html += `<div class="section-title">${typeIcons[type]} ${rarityLabels[rarity]} · max ${maxRocks}×</div>`;
-      lastRarity = rarity;
+
+  html += `<div class="ref-table-wrap">`;
+  html += `<table class="ref-table"><thead><tr>`;
+  html += `<th class="col-name">Ore</th>`;
+  for (let i = 1; i <= MAX_COLS; i++) html += `<th class="col-num">×${i}</th>`;
+  html += `</tr></thead><tbody>`;
+
+  ORES.forEach(([name, base, maxRocks, rarity]) => {
+    const dotVar = rarity === 'legendary' ? 'leg' : rarity === 'epic' ? 'epic' : rarity === 'rare' ? 'rare' : rarity === 'uncommon' ? 'unc' : 'com';
+    html += `<tr><td class="cell-name"><span class="ref-dot" style="background:var(--r-${dotVar})"></span>${name}</td>`;
+    for (let i = 1; i <= MAX_COLS; i++) {
+      const sig = base * i;
+      const cls = i === 1 ? "first" : "";
+      html += `<td class="cell-sig ${cls}">${sig.toLocaleString()}</td>`;
     }
-    html += `<div class="ref-row">
-      <div class="rarity-dot rarity-${rarity}"></div>
-      <div class="ref-name">${name}</div>
-      <div class="ref-base">${base.toLocaleString()}</div>
-      <div class="ref-max">×${maxRocks}</div>
-    </div>`;
+    html += `</tr>`;
   });
+
+  html += `</tbody></table></div>`;
+
+  // Other mining types
+  html += `<div class="ref-other">`;
+  html += `<div class="ref-other-header">▸ Other Mining Types</div>`;
+  OTHER_MINING.forEach(o => {
+    const dotVar = o.type === 'roc' ? 'roc' : o.type === 'fps' ? 'fps' : 'sal';
+    html += `
+      <div class="ref-other-row">
+        <div class="ref-other-name">
+          <div class="ref-dot" style="background:var(--r-${dotVar});width:8px;height:8px;border-radius:50%"></div>
+          ${o.label}
+        </div>
+        <div class="ref-other-formula">base <b>${o.base.toLocaleString()}</b> · ×1–${o.maxRocks}</div>
+      </div>`;
+  });
+  html += `</div>`;
+
   div.innerHTML = html;
   div.style.display = "block";
 }
 
-// ═══ INIT ═══
+// ═══════════════════════════════════════════════
+// MASS CALCULATOR
+// ═══════════════════════════════════════════════
+function calcMass() {
+  const rockStr = document.getElementById("massRock").value.replace(",", ".");
+  const pctStr = document.getElementById("massPct").value.replace(",", ".");
+  const rock = parseFloat(rockStr);
+  const pct = parseFloat(pctStr);
+  const resultEl = document.getElementById("massResult");
+  const formulaEl = document.getElementById("massFormula");
+
+  if (isNaN(rock) || isNaN(pct) || rock <= 0 || pct < 0) {
+    resultEl.textContent = "—";
+    formulaEl.innerHTML = "Enter rock mass and valuable percentage";
+    return;
+  }
+
+  const yieldVal = (rock * pct / 100);
+  const display = yieldVal < 0.01 ? yieldVal.toFixed(4) : yieldVal.toFixed(2);
+
+  resultEl.textContent = display;
+  formulaEl.innerHTML = `<span class="v">${rock}</span> SCU × <span class="v">${pct}%</span> = <span class="v">${display}</span> SCU valuable`;
+}
+
+// ═══════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════
+function switchTab(tab) {
+  document.getElementById("tab-scan").classList.toggle("active", tab === "scan");
+  document.getElementById("tab-mass").classList.toggle("active", tab === "mass");
+  document.getElementById("view-scan").style.display = tab === "scan" ? "" : "none";
+  document.getElementById("view-mass").style.display = tab === "mass" ? "" : "none";
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
 document.getElementById("scanInput").addEventListener("input", renderResults);
+document.getElementById("massRock").addEventListener("input", calcMass);
+document.getElementById("massPct").addEventListener("input", calcMass);
 renderResults();
 </script>
 </body>
