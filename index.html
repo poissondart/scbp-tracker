@@ -3,1166 +3,390 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>SC Scan ID</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛏</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+<title>SC Blueprint Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0a0e17;--bg2:#111827;--cd:#1a2236;--ac:#3b82f6;--tx:#e2e8f0;--mu:#94a3b8;--dm:#64748b;--bd:#1e293b;--gn:#22c55e;--am:#f59e0b}
+body{font-family:'JetBrains Mono','Fira Code','Consolas','SF Mono',monospace;font-size:13px;background:var(--bg);color:var(--tx);min-height:100vh;max-width:900px;margin:0 auto}
+input{font-family:inherit}
+button{font-family:inherit;cursor:pointer}
+a{color:var(--ac)}
 
-:root{
-  --bg:#070a10;
-  --bg2:#0d1118;
-  --bg3:#13181f;
-  --panel:#181d26;
-  --line:#1f2530;
-  --line2:#2a3140;
-  --tx:#e8eef5;
-  --tx2:#9ca5b3;
-  --tx3:#5a6473;
-  --dim:#3a4150;
-  --amber:#fbbf24;
-  --amber-dim:#92660a;
-  --green:#4ade80;
-  --red:#f87171;
-  --blue:#60a5fa;
+.header{background:var(--bg2);border-bottom:1px solid var(--bd);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-icon{font-size:18px;color:var(--ac)}
+.logo-text{font-weight:700;font-size:14px;color:var(--ac)}
+.header-right{display:flex;align-items:center;gap:6px}
+.player-badge{font-size:11px;color:var(--mu);background:var(--cd);padding:3px 8px;border-radius:6px}
+.stat-green{font-size:11px;color:var(--gn);font-weight:700}
+.stat-dim{font-size:11px;color:var(--dm)}
+.icon-btn{background:none;border:none;color:var(--mu);font-size:16px;padding:4px;min-width:40px;min-height:40px;display:flex;align-items:center;justify-content:center}
 
-  --r-leg:#fbbf24;
-  --r-epic:#ec4899;
-  --r-rare:#60a5fa;
-  --r-unc:#4ade80;
-  --r-com:#94a3b8;
-  --r-roc:#e2e8f0;
-  --r-fps:#a855f7;
-  --r-sal:#92400e;
+.progress{padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--bd)}
+.progress-bar{height:6px;border-radius:3px;background:var(--bd);overflow:hidden;display:flex}
+.progress-gn{background:var(--gn);transition:width .3s}
+.progress-am{background:var(--am);transition:width .3s}
+.progress-stats{display:flex;justify-content:space-between;margin-top:3px;font-size:10px}
 
-  --mono:'JetBrains Mono',ui-monospace,'Cascadia Code','SF Mono',monospace;
-  --display:'Orbitron',var(--mono);
-}
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--bd)}
+.tab{flex:1;padding:12px 0;border:none;border-bottom:3px solid transparent;background:transparent;color:var(--dm);font-size:13px;font-weight:400;min-height:44px}
+.tab.active{color:var(--ac);font-weight:700;border-bottom-color:var(--ac)}
 
-html,body{background:var(--bg);color:var(--tx);font-family:var(--mono);font-size:13px;min-height:100vh}
-body{
-  max-width:640px;
-  margin:0 auto;
-  padding-bottom:60px;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(251,191,36,.04), transparent 70%),
-    linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
-  background-attachment:fixed;
-  position:relative;
-}
-body::before{
-  content:'';
-  position:fixed;
-  inset:0;
-  background-image:
-    linear-gradient(rgba(251,191,36,.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(251,191,36,.015) 1px, transparent 1px);
-  background-size:24px 24px;
-  pointer-events:none;
-  z-index:0;
-}
-#app{position:relative;z-index:1}
+.search-bar{padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;gap:6px}
+.search-input{flex:1;padding:10px 14px;border-radius:10px;font-size:14px;border:1px solid var(--bd);background:var(--cd);color:var(--tx);outline:none;min-height:44px;width:100%}
+.filter-btn{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px;border:2px solid var(--bd);background:transparent;color:var(--dm);font-size:12px;padding:0 14px}
+.filter-btn.active{border-color:var(--ac);background:rgba(59,130,246,.15);color:var(--ac)}
 
-a{color:var(--amber)}
-button,input{font-family:inherit;color:inherit}
-input{outline:none}
+.filters{padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;flex-wrap:wrap;gap:4px}
+.fbtn{padding:7px 10px;border-radius:8px;font-size:11px;border:1px solid var(--bd);background:transparent;color:var(--mu);min-height:34px}
+.fbtn.active{border-color:var(--ac);background:rgba(59,130,246,.15);color:var(--ac)}
 
-.header{
-  padding:18px 20px 14px;
-  border-bottom:1px solid var(--line);
-  background:linear-gradient(180deg, rgba(251,191,36,.03), transparent);
-  position:relative;
-}
-.header::after{
-  content:'';
-  position:absolute;
-  bottom:-1px;left:0;right:0;
-  height:1px;
-  background:linear-gradient(90deg, transparent, var(--amber), transparent);
-  opacity:.4;
-}
-.brand{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand-left{display:flex;align-items:center;gap:12px}
-.brand-mark{
-  width:36px;height:36px;
-  border:1px solid var(--amber);
-  background:rgba(251,191,36,.08);
-  display:flex;align-items:center;justify-content:center;
-  font-size:18px;
-  position:relative;
-  clip-path:polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
-}
-.brand-text{display:flex;flex-direction:column;line-height:1}
-.brand-name{
-  font-family:var(--display);
-  font-weight:900;
-  font-size:15px;
-  letter-spacing:2px;
-  color:var(--tx);
-}
-.brand-sub{
-  font-size:9px;
-  color:var(--tx3);
-  letter-spacing:2.5px;
-  margin-top:4px;
-  text-transform:uppercase;
-}
-.brand-status{
-  display:flex;align-items:center;gap:6px;
-  font-size:9px;
-  color:var(--green);
-  letter-spacing:1.5px;
-}
-.brand-status .pulse{
-  width:6px;height:6px;
-  border-radius:50%;
-  background:var(--green);
-  animation:pulse 2s infinite;
-  box-shadow:0 0 8px var(--green);
-}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.count{padding:6px 16px;font-size:10px;color:var(--dm);border-bottom:1px solid var(--bd)}
 
-.tabs{
-  display:flex;
-  background:var(--bg2);
-  border-bottom:1px solid var(--line);
-  position:sticky;top:0;z-index:50;
-  backdrop-filter:blur(8px);
-}
-.tab{
-  flex:1;
-  padding:14px 0;
-  border:none;
-  background:transparent;
-  color:var(--tx3);
-  font-family:var(--display);
-  font-weight:700;
-  font-size:11px;
-  letter-spacing:2.5px;
-  cursor:pointer;
-  position:relative;
-  transition:color .2s;
-  min-height:48px;
-}
-.tab:hover{color:var(--tx2)}
-.tab.active{color:var(--amber)}
-.tab.active::after{
-  content:'';
-  position:absolute;
-  bottom:0;left:20%;right:20%;
-  height:2px;
-  background:var(--amber);
-  box-shadow:0 0 8px var(--amber);
-}
+.set-row{border-bottom:1px solid var(--bd);cursor:pointer}
+.set-row.expanded{background:var(--cd)}
+.set-header{display:flex;align-items:center;gap:10px;padding:12px 16px}
+.set-info{flex:1;min-width:0}
+.set-name{font-weight:700;font-size:14px}
+.set-name.done{color:var(--gn)}
+.set-type{font-size:9px;color:var(--dm);background:var(--bg);padding:2px 6px;border-radius:4px;margin-left:6px}
+.set-complete{font-size:9px;color:var(--gn);font-weight:700;background:rgba(34,197,94,.1);padding:2px 6px;border-radius:4px;margin-left:4px}
+.dots{display:flex;gap:2px;margin-top:4px;flex-wrap:wrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--bd)}
+.dot.owned{background:var(--gn)}
+.dot.wanted{background:var(--am)}
+.set-count{text-align:right;flex-shrink:0}
+.set-count-main{font-size:14px;font-weight:700}
+.set-count-main.done{color:var(--gn)}
+.set-count-wanted{font-size:10px;color:var(--am)}
 
-.panel{
-  margin:16px;
-  background:var(--panel);
-  border:1px solid var(--line);
-  position:relative;
-}
-.panel::before{
-  content:'';
-  position:absolute;
-  top:-1px;left:-1px;
-  width:14px;height:14px;
-  border-top:1px solid var(--amber);
-  border-left:1px solid var(--amber);
-}
-.panel::after{
-  content:'';
-  position:absolute;
-  bottom:-1px;right:-1px;
-  width:14px;height:14px;
-  border-bottom:1px solid var(--amber);
-  border-right:1px solid var(--amber);
-}
-.panel-header{
-  padding:10px 14px;
-  border-bottom:1px solid var(--line);
-  background:var(--bg3);
-  display:flex;align-items:center;justify-content:space-between;
-}
-.panel-title{
-  font-family:var(--display);
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:2px;
-  color:var(--amber);
-  text-transform:uppercase;
-}
-.panel-meta{
-  font-size:9px;
-  color:var(--tx3);
-  letter-spacing:1.5px;
-}
-.panel-body{padding:14px}
+.bb{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px;border:2px solid var(--bd);background:transparent;color:var(--dm);font-size:18px;flex-shrink:0;padding:0;text-decoration:none}
+.bb.active-gn{border-color:var(--gn);background:rgba(34,197,94,.15);color:var(--gn)}
+.bb.active-am{border-color:var(--am);background:rgba(245,158,11,.15);color:var(--am)}
+.bb.active-ac{border-color:var(--ac);background:rgba(59,130,246,.15);color:var(--ac)}
 
-.input-block{position:relative}
-.input-label{
-  font-size:9px;
-  color:var(--tx3);
-  letter-spacing:2px;
-  text-transform:uppercase;
-  margin-bottom:8px;
-  display:flex;align-items:center;justify-content:space-between;
-}
-.input-label .badge{
-  background:rgba(251,191,36,.1);
-  border:1px solid var(--amber-dim);
-  color:var(--amber);
-  padding:2px 6px;
-  font-size:8px;
-}
-.scan-input{
-  width:100%;
-  padding:18px 16px;
-  background:var(--bg);
-  border:1px solid var(--line2);
-  color:var(--amber);
-  font-family:var(--mono);
-  font-size:24px;
-  font-weight:700;
-  text-align:center;
-  letter-spacing:3px;
-  caret-color:var(--amber);
-  transition:border-color .2s;
-}
-.scan-input:focus{
-  border-color:var(--amber);
-  box-shadow:0 0 0 1px var(--amber), inset 0 0 20px rgba(251,191,36,.05);
-}
-.scan-input::placeholder{
-  color:var(--dim);
-  font-size:14px;
-  letter-spacing:1px;
-  font-weight:500;
-}
-.input-hints{
-  display:flex;
-  justify-content:space-between;
-  margin-top:8px;
-  font-size:9px;
-  color:var(--tx3);
-  letter-spacing:1px;
-}
-.input-hints .key{
-  color:var(--tx2);
-  background:var(--bg);
-  padding:2px 5px;
-  border:1px solid var(--line2);
-}
+.set-detail{padding:0 8px 12px}
+.set-actions{display:flex;gap:6px;margin-bottom:8px;padding:0 8px;flex-wrap:wrap}
+.set-actions .bb{min-width:auto;min-height:38px;padding:0 12px;font-size:11px;border-radius:8px}
 
-.mass-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-.mass-input{
-  width:100%;
-  padding:14px 12px;
-  background:var(--bg);
-  border:1px solid var(--line2);
-  color:var(--tx);
-  font-family:var(--mono);
-  font-size:18px;
-  font-weight:700;
-  text-align:center;
-  letter-spacing:1px;
-}
-.mass-input:focus{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
-.mass-input::placeholder{color:var(--dim);font-size:13px}
-.mass-result{
-  background:var(--bg);
-  border:1px solid var(--line2);
-  padding:24px 16px;
-  text-align:center;
-  position:relative;
-}
-.mass-result::before{
-  content:'OUTPUT';
-  position:absolute;
-  top:-7px;left:14px;
-  background:var(--panel);
-  padding:0 8px;
-  font-size:8px;
-  letter-spacing:2px;
-  color:var(--tx3);
-}
-.mass-result-label{
-  font-size:9px;
-  letter-spacing:2px;
-  color:var(--tx3);
-  text-transform:uppercase;
-  margin-bottom:8px;
-}
-.mass-result-value{
-  font-family:var(--display);
-  font-size:42px;
-  font-weight:900;
-  color:var(--amber);
-  letter-spacing:1px;
-  line-height:1;
-  text-shadow:0 0 20px rgba(251,191,36,.3);
-}
-.mass-result-unit{
-  font-size:14px;
-  color:var(--tx2);
-  margin-top:8px;
-  letter-spacing:1px;
-}
-.mass-formula{
-  margin-top:14px;
-  padding:10px;
-  background:var(--bg);
-  border-left:2px solid var(--amber);
-  font-size:11px;
-  color:var(--tx2);
-  text-align:center;
-  letter-spacing:.5px;
-}
-.mass-formula .v{color:var(--amber);font-weight:700}
+.item-row{display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(30,41,59,.08)}
+.item-bar{width:4px;height:30px;border-radius:2px;background:var(--bd);flex-shrink:0}
+.item-bar.owned{background:var(--gn)}
+.item-bar.wanted{background:var(--am)}
+.item-name{font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-name.owned{color:var(--gn)}
+.item-name.wanted{color:var(--am)}
 
-.results-meta{
-  padding:10px 16px;
-  font-size:9px;
-  color:var(--tx3);
-  letter-spacing:1.5px;
-  text-transform:uppercase;
-  display:flex;align-items:center;justify-content:space-between;
-  border-top:1px solid var(--line);
-  border-bottom:1px solid var(--line);
-  background:var(--bg2);
-}
-.results-meta .count{color:var(--amber)}
+.empty{text-align:center;padding:60px 20px;color:var(--dm)}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.empty-text{font-size:14px;font-weight:600}
 
-.result-row{
-  padding:11px 16px;
-  border-bottom:1px solid var(--line);
-  display:flex;align-items:center;gap:12px;
-  position:relative;
-}
-.result-row.exact{background:linear-gradient(90deg, rgba(251,191,36,.06), transparent)}
-.result-row.exact::before{
-  content:'';
-  position:absolute;
-  left:0;top:0;bottom:0;width:2px;
-  background:var(--amber);
-  box-shadow:0 0 8px var(--amber);
-}
-.result-row.approx{background:rgba(251,191,36,.02)}
-.result-row.range{background:rgba(96,165,250,.02)}
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:32px;max-width:360px;width:100%;text-align:center}
+.login-icon{font-size:32px;margin-bottom:8px}
+.login-title{font-size:18px;font-weight:700;color:var(--ac);margin-bottom:4px}
+.login-sub{font-size:11px;color:var(--dm);margin-bottom:24px}
+.login-label{font-size:13px;color:var(--mu);margin-bottom:12px}
+.login-input{width:100%;padding:12px 16px;border-radius:10px;font-size:16px;border:2px solid var(--bd);background:var(--cd);color:var(--tx);outline:none;margin-bottom:12px;text-align:center}
+.login-input:focus{border-color:var(--ac)}
+.login-btn{width:100%;padding:14px;border-radius:10px;font-size:14px;font-weight:700;border:none;background:var(--bd);color:var(--dm);min-height:48px}
+.login-btn.ready{background:var(--ac);color:#fff;cursor:pointer}
+.login-hint{font-size:10px;color:var(--dm);margin-top:16px}
 
-.result-rarity-bar{
-  width:3px;
-  align-self:stretch;
-  flex-shrink:0;
-}
-.bar-legendary{background:var(--r-leg)}
-.bar-epic{background:var(--r-epic)}
-.bar-rare{background:var(--r-rare)}
-.bar-uncommon{background:var(--r-unc)}
-.bar-common{background:var(--r-com)}
-.bar-roc{background:var(--r-roc)}
-.bar-fps{background:var(--r-fps)}
-.bar-salvage{background:var(--r-sal)}
+.footer{text-align:center;padding:24px 16px;color:var(--dm);font-size:10px;border-top:1px solid var(--bd)}
 
-.result-info{flex:1;min-width:0}
-.result-name{
-  font-size:14px;
-  font-weight:700;
-  color:var(--tx);
-  letter-spacing:.3px;
-}
-.result-meta{
-  font-size:10px;
-  color:var(--tx3);
-  margin-top:2px;
-  letter-spacing:.5px;
-  display:flex;gap:8px;align-items:center;
-}
-.result-meta .rarity-tag{
-  text-transform:uppercase;
-  letter-spacing:1.5px;
-  font-weight:700;
-  font-size:9px;
-}
-.tag-legendary{color:var(--r-leg)}
-.tag-epic{color:var(--r-epic)}
-.tag-rare{color:var(--r-rare)}
-.tag-uncommon{color:var(--r-unc)}
-.tag-common{color:var(--r-com)}
-.tag-roc{color:var(--r-roc)}
-.tag-fps{color:var(--r-fps)}
-.tag-salvage{color:var(--r-sal)}
-
-.result-sig{text-align:right;flex-shrink:0;font-family:var(--mono)}
-.result-sig-val{
-  font-size:15px;
-  font-weight:700;
-  color:var(--amber);
-  letter-spacing:.5px;
-  line-height:1;
-}
-.result-sig-cluster{
-  font-size:9px;
-  color:var(--tx3);
-  margin-top:4px;
-  letter-spacing:1px;
-}
-.match-badge{
-  display:inline-block;
-  font-size:8px;
-  padding:2px 5px;
-  margin-top:5px;
-  letter-spacing:1.2px;
-  font-weight:700;
-}
-.badge-exact{background:rgba(251,191,36,.15);color:var(--amber);border:1px solid var(--amber-dim)}
-.badge-approx{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
-.badge-range{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.3)}
-
-.pool-row{
-  padding:8px 16px;
-  border-bottom:1px solid var(--line);
-  display:flex;align-items:center;gap:10px;
-  font-size:12px;
-}
-.pool-row.exact{background:linear-gradient(90deg, rgba(251,191,36,.06), transparent)}
-.pool-name{
-  flex:1;
-  color:var(--tx2);
-  font-size:12px;
-  display:flex;align-items:center;gap:8px;
-}
-.pool-name .x-rocks{color:var(--tx3);font-size:10px}
-.pool-sig{
-  font-family:var(--mono);
-  font-size:13px;
-  font-weight:700;
-  color:var(--amber);
-  letter-spacing:.5px;
-}
-
-.empty-state{
-  padding:50px 20px;
-  text-align:center;
-  color:var(--tx3);
-}
-.empty-state .icon{
-  font-size:32px;
-  margin-bottom:10px;
-  opacity:.4;
-  display:block;
-}
-.empty-state .label{
-  font-size:11px;
-  letter-spacing:1.5px;
-  text-transform:uppercase;
-}
-
-.legend{padding:14px 16px;background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.legend-section{margin-bottom:10px}
-.legend-section:last-child{margin-bottom:0}
-.legend-title{
-  font-size:9px;
-  color:var(--tx3);
-  letter-spacing:2px;
-  text-transform:uppercase;
-  margin-bottom:8px;
-}
-.legend-grid{display:flex;flex-wrap:wrap;gap:6px 14px}
-.legend-item{
-  display:flex;align-items:center;gap:5px;
-  font-size:10px;
-  color:var(--tx2);
-  letter-spacing:.5px;
-}
-.legend-dot{width:8px;height:8px;flex-shrink:0;border-radius:50%}
-
-.ref-toggle{padding:14px 16px;text-align:center}
-.ref-btn{
-  padding:11px 22px;
-  background:var(--bg2);
-  border:1px solid var(--line2);
-  color:var(--tx2);
-  font-family:var(--display);
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:2px;
-  cursor:pointer;
-  text-transform:uppercase;
-  min-height:44px;
-  transition:all .2s;
-}
-.ref-btn:hover{border-color:var(--amber);color:var(--amber)}
-.ref-btn.active{
-  background:rgba(251,191,36,.1);
-  border-color:var(--amber);
-  color:var(--amber);
-}
-
-.ref-table-wrap{
-  margin:0 16px 16px;
-  overflow-x:auto;
-  border:1px solid var(--line);
-  background:var(--panel);
-  position:relative;
-}
-.ref-table{
-  border-collapse:collapse;
-  font-family:var(--mono);
-  font-size:10px;
-  width:100%;
-  min-width:max-content;
-}
-.ref-table thead{background:var(--bg3)}
-.ref-table th{
-  padding:8px 6px;
-  border-bottom:1px solid var(--line2);
-  font-family:var(--display);
-  font-size:9px;
-  font-weight:700;
-  letter-spacing:1px;
-  color:var(--amber);
-  text-transform:uppercase;
-}
-.ref-table th.col-name{
-  text-align:left;padding-left:12px;
-  position:sticky;left:0;
-  background:var(--bg3);
-  border-right:1px solid var(--line2);
-  z-index:2;
-}
-.ref-table th.col-num{text-align:right;padding-right:10px;color:var(--tx3)}
-.ref-table td{
-  padding:6px;
-  border-bottom:1px solid var(--line);
-  white-space:nowrap;
-}
-.ref-table td.cell-name{
-  text-align:left;padding-left:12px;
-  position:sticky;left:0;
-  background:var(--panel);
-  border-right:1px solid var(--line2);
-  font-weight:700;
-  color:var(--tx);
-}
-.ref-table td.cell-name .ref-dot{display:inline-block;vertical-align:middle;margin-right:6px}
-.ref-table tr:nth-child(even) td.cell-name{background:var(--bg3)}
-.ref-table tr:nth-child(even) td{background:rgba(255,255,255,.01)}
-.ref-table td.cell-sig{
-  text-align:right;
-  padding-right:10px;
-  color:var(--tx2);
-  font-variant-numeric:tabular-nums;
-}
-.ref-table td.cell-sig.first{color:var(--amber);font-weight:700}
-.ref-table .ref-dot{width:7px;height:7px;border-radius:50%}
-
-.ref-other{margin:0 16px 16px;background:var(--panel);border:1px solid var(--line)}
-.ref-other-header{
-  padding:10px 14px;
-  background:var(--bg3);
-  border-bottom:1px solid var(--line);
-  font-family:var(--display);
-  font-size:9px;
-  font-weight:700;
-  letter-spacing:2px;
-  color:var(--amber);
-  text-transform:uppercase;
-}
-.ref-other-row{
-  padding:10px 14px;
-  display:flex;align-items:center;gap:12px;
-  border-bottom:1px solid var(--line);
-}
-.ref-other-row:last-child{border-bottom:none}
-.ref-other-name{flex:1;font-size:11px;display:flex;align-items:center;gap:8px}
-.ref-other-formula{font-size:10px;color:var(--tx3);font-family:var(--mono)}
-.ref-other-formula b{color:var(--amber)}
-
-.footer{
-  text-align:center;
-  padding:30px 16px 20px;
-  color:var(--tx3);
-  font-size:9px;
-  letter-spacing:1.5px;
-  border-top:1px solid var(--line);
-  margin-top:20px;
-}
-.footer .line{margin:4px 0}
-.footer .uppercase{text-transform:uppercase;color:var(--dim)}
-
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.fade-in{animation:fadeUp .25s ease-out}
-
-@media(max-width:480px){
-  .panel{margin:12px}
-  .mass-result-value{font-size:36px}
-  .scan-input{font-size:20px;padding:16px 12px}
-  .ref-table{font-size:9px}
-  .ref-table th,.ref-table td{padding:5px 4px}
-}
+.themes{background:var(--bg2);border-bottom:1px solid var(--bd);padding:8px 16px;display:flex;flex-wrap:wrap;gap:4px}
+.theme-btn{padding:8px 12px;border-radius:8px;font-size:12px;border:2px solid var(--bd);background:var(--cd);color:var(--mu);min-height:38px}
+.theme-btn.active{border-color:var(--ac);background:rgba(59,130,246,.15);color:var(--ac)}
 </style>
 </head>
 <body>
-<div id="app">
 
-<div class="header">
-  <div class="brand">
-    <div class="brand-left">
-      <div class="brand-mark">⛏</div>
-      <div class="brand-text">
-        <div class="brand-name">FRONTIER</div>
-        <div class="brand-sub">Mining Scanner v2.0</div>
-      </div>
-    </div>
-    <div class="brand-status">
-      <div class="pulse"></div>
-      <span>ONLINE</span>
-    </div>
-  </div>
-</div>
+<div id="app"></div>
 
-<div class="tabs">
-  <button class="tab active" id="tab-scan" onclick="switchTab('scan')">◊ SCAN ID</button>
-  <button class="tab" id="tab-mass" onclick="switchTab('mass')">◊ MASS CALC</button>
-</div>
-
-<div id="view-scan">
-
-<div class="panel">
-  <div class="panel-header">
-    <div class="panel-title">▸ Signature Input</div>
-    <div class="panel-meta">RS SCAN</div>
-  </div>
-  <div class="panel-body">
-    <div class="input-block">
-      <div class="input-label">
-        <span>Scanner Reading</span>
-        <span class="badge">LIVE FILTER</span>
-      </div>
-      <input class="scan-input" id="scanInput" type="text" inputmode="numeric" placeholder="0000" autocomplete="off">
-      <div class="input-hints">
-        <span>min 3 digits</span>
-        <span>or <span class="key">4000-7500</span> for range</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="results"></div>
-
-<div class="legend">
-  <div class="legend-section">
-    <div class="legend-title">▸ Ship Mining</div>
-    <div class="legend-grid">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--r-leg)"></div>Legendary</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--r-epic)"></div>Epic</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--r-rare)"></div>Rare</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--r-unc)"></div>Uncommon</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--r-com)"></div>Common</div>
-    </div>
-  </div>
-  <div class="legend-section">
-    <div class="legend-title">▸ Other Mining</div>
-    <div class="legend-grid">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--r-roc)"></div>ROC Mineable</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--r-fps)"></div>FPS Mineable</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--r-sal)"></div>Salvage</div>
-    </div>
-  </div>
-</div>
-
-<div class="ref-toggle">
-  <button class="ref-btn" id="refBtn" onclick="toggleRef()">▾ Show Reference Grid</button>
-</div>
-<div id="refTable" style="display:none"></div>
-
-</div>
-
-<div id="view-mass" style="display:none">
-
-<div class="panel">
-  <div class="panel-header">
-    <div class="panel-title">▸ Valuable Mass Calculator</div>
-    <div class="panel-meta">SCU YIELD</div>
-  </div>
-  <div class="panel-body">
-
-    <div class="mass-grid">
-      <div>
-        <div class="input-label"><span>Rock Mass</span></div>
-        <input class="mass-input" id="massRock" type="text" inputmode="decimal" placeholder="32" autocomplete="off">
-        <div style="text-align:center;font-size:9px;color:var(--tx3);letter-spacing:1.5px;margin-top:6px;text-transform:uppercase">SCU</div>
-      </div>
-      <div>
-        <div class="input-label"><span>Valuable %</span></div>
-        <input class="mass-input" id="massPct" type="text" inputmode="decimal" placeholder="6.0" autocomplete="off">
-        <div style="text-align:center;font-size:9px;color:var(--tx3);letter-spacing:1.5px;margin-top:6px;text-transform:uppercase">PERCENT</div>
-      </div>
-    </div>
-
-    <div class="mass-result">
-      <div class="mass-result-label">Valuable Yield</div>
-      <div class="mass-result-value" id="massResult">—</div>
-      <div class="mass-result-unit">SCU</div>
-    </div>
-
-    <div class="mass-formula" id="massFormula">
-      Enter rock mass and valuable percentage
-    </div>
-
-  </div>
-</div>
-
-<div class="panel">
-  <div class="panel-header">
-    <div class="panel-title">▸ Quick Reference</div>
-    <div class="panel-meta">HOW IT WORKS</div>
-  </div>
-  <div class="panel-body" style="font-size:11px;color:var(--tx2);line-height:1.7">
-    <div>• Read both <b style="color:var(--amber)">Mass</b> and <b style="color:var(--amber)">Valuable %</b> from in-game scanner</div>
-    <div>• Yield = Mass × Percent ÷ 100</div>
-    <div>• Higher % = better extraction targets</div>
-    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:10px;color:var(--tx3)">
-      Example: 32 SCU rock × 6% = <b style="color:var(--amber)">1.92 SCU</b> valuable ore
-    </div>
-  </div>
-</div>
-
-</div>
-
-<div class="footer">
-  <div class="line uppercase">⛏ Frontier Mining Scanner</div>
-  <div class="line">Star Citizen Alpha 4.7 · Data: SCMDB</div>
-  <div class="line uppercase" style="margin-top:8px">Community tool · Not affiliated with CIG</div>
-</div>
-
-</div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
 <script>
-// ═══════════════════════════════════════════════
-// ORE DATABASE — sorted to match in-game reference
-// (common at top → legendary at bottom)
-// ═══════════════════════════════════════════════
-// [name, base, maxRocks, rarity]
-const ORES = [
-  // Common
-  ["Ice",           4300, 10, "common"],
-  ["Aluminium",     4285, 10, "common"],
-  ["Iron",          4270, 10, "common"],
-  ["Silicon",       4255, 10, "common"],
-  ["Copper",        4240, 10, "common"],
-  ["Corundum",      4225, 10, "common"],
-  ["Quartz",        4210, 10, "common"],
-  ["Tin",           4195, 10, "common"],
-  ["Hephaestanite", 4180, 10, "common"],
-  // Uncommon
-  ["Torite",        3900, 10, "uncommon"],
-  ["Agricium",      3885, 10, "uncommon"],
-  ["Tungsten",      3870, 10, "uncommon"],
-  ["Titanium",      3855, 10, "uncommon"],
-  ["Aslarite",      3840, 10, "uncommon"],
-  ["Laranite",      3825, 10, "uncommon"],
-  // Rare
-  ["Bexalite",      3600, 10, "rare"],
-  ["Gold",          3585, 10, "rare"],
-  ["Borase",        3570, 10, "rare"],
-  ["Taranite",      3555, 10, "rare"],
-  ["Beryl",         3540, 10, "rare"],
-  // Epic
-  ["Lindinium",     3400, 10, "epic"],
-  ["Riccite",       3385, 10, "epic"],
-  ["Ouratite",      3370, 10, "epic"],
-  // Legendary
-  ["Savrilium",     3200, 10, "legendary"],
-  ["Stileron",      3185, 10, "legendary"],
-  ["Quantainium",   3170, 10, "legendary"],
-];
+// ═══ FIREBASE CONFIG ═══
+firebase.initializeApp({
+  apiKey: "AIzaSyBzUUwfgfMtTOHneqbPILyQk5L5sV_OIX0",
+  authDomain: "scbp-tracker.firebaseapp.com",
+  databaseURL: "https://scbp-tracker-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "scbp-tracker",
+  storageBucket: "scbp-tracker.firebasestorage.app",
+  messagingSenderId: "530276090175",
+  appId: "1:530276090175:web:0685d5ca1e6251fc60938a"
+});
+const db = firebase.database();
 
-// Other mining categories — generic match (no specific ore name)
-const OTHER_MINING = [
-  { type: "roc",     label: "ROC Mineable", base: 4000, maxRocks: 30 },
-  { type: "fps",     label: "FPS Mineable", base: 3000, maxRocks: 30 },
-  { type: "salvage", label: "Salvage",      base: 2000, maxRocks: 20 },
-];
+// ═══ DATA — 353 real blueprints from sccrafter.com ═══
+const A_RAW=["ADP Arms Woodland","ADP Core","ADP Legs Woodland","ADP-mk4 Arms Woodland","ADP-mk4 Core Woodland","ADP-mk4 Helmet Woodland","ADP-mk4 Legs Woodland","Antium Arms","Antium Arms Jet","Antium Arms Maroon","Antium Arms Moss Camo","Antium Arms Sand","Antium Arms Storm","Antium Core","Antium Core Jet","Antium Core Maroon","Antium Core Moss Camo","Antium Core Sand","Antium Core Storm","Antium Helmet","Antium Helmet Jet","Antium Helmet Maroon","Antium Helmet Moss Camo","Antium Helmet Sand","Antium Helmet Storm","Antium Legs","Antium Legs Jet","Antium Legs Maroon","Antium Legs Moss Camo","Antium Legs Sand","Antium Legs Storm","Arden-SL Arms","Arden-SL Core","Arden-SL Helmet","Arden-SL Legs","Argus Helmet","Aril Arms","Aril Core","Aril Helmet","Aril Legs","Artimex Arms","Artimex Arms (Modified)","Artimex Arms Canuto","Artimex Arms Lodestone","Artimex Arms Wildwood","Artimex Core","Artimex Core (Modified)","Artimex Core Canuto","Artimex Core Lodestone","Artimex Core Wildwood","Artimex Helmet","Artimex Helmet Canuto","Artimex Helmet Lodestone","Artimex Helmet Wildwood","Artimex Legs","Artimex Legs Canuto","Artimex Legs Lodestone","Artimex Legs Wildwood","Aves Arms","Aves Core","Aves Helmet","Aves Legs","Aves Shrike Arms","Aves Shrike Core","Aves Shrike Helmet","Aves Shrike Legs","Badami Helmet","Balor HCH Helmet","Calico Arms Tactical","Calico Core Tactical","Calico Helmet Tactical","Calico Legs Tactical","Carnifex Armor Core","Carnifex Armor Legs","CBH-3 Helmet Base","Citadel Arms Base","Citadel Core Base","Citadel Legs Base","Corbel Arms Halcyon","Corbel Arms Mire","Corbel Arms Patina","Corbel Arms Smolder","Corbel Core Halcyon","Corbel Core Mire","Corbel Core Patina","Corbel Core Smolder","Corbel Helmet Halcyon","Corbel Helmet Mire","Corbel Helmet Patina","Corbel Helmet Smolder","Corbel Legs Halcyon","Corbel Legs Mire","Corbel Legs Patina","Corbel Legs Smolder","Defiance Arms Tactical","Defiance Core Tactical","Defiance Helmet Tactical","Defiance Legs Tactical","Dust Devil Armor Arms","Dust Devil Armor Core","Dust Devil Armor Legs","DustUp Arms Tactical","DustUp Core Tactical","DustUp Helmet Tactical","DustUp Legs Tactical","Fortifier Helmet Base","G-2 Helmet Woodland","Geist Armor Arms","Geist Armor Arms Desert","Geist Armor Arms Forest","Geist Armor Arms Rogue","Geist Armor Arms Whiteout","Geist Armor Core","Geist Armor Core Desert","Geist Armor Core Forest","Geist Armor Core Rogue","Geist Armor Core Whiteout","Geist Armor Helmet","Geist Armor Helmet Desert","Geist Armor Helmet Forest","Geist Armor Helmet Rogue","Geist Armor Helmet Whiteout","Geist Armor Legs","Geist Armor Legs Desert","Geist Armor Legs Forest","Geist Armor Legs Rogue","Geist Armor Legs Whiteout","Horizon Helmet","Inquisitor Arms Black","Inquisitor Arms Grey","Inquisitor Core Black","Inquisitor Core Grey","Inquisitor Legs Black","Inquisitor Legs Grey","Lynx Arms","Lynx Core","Lynx Legs","Manticore Helmet","Monde Arms","Monde Arms Crimson Camo","Monde Arms Daimyo","Monde Arms Delta Camo","Monde Arms Hemlock Camo","Monde Arms Hiro","Monde Core","Monde Core Crimson Camo","Monde Core Daimyo","Monde Core Delta Camo","Monde Core Hemlock Camo","Monde Core Hiro","Monde Helmet","Monde Helmet Crimson Camo","Monde Helmet Daimyo","Monde Helmet Delta Camo","Monde Helmet Hiro","Monde Legs","Monde Legs Crimson Camo","Monde Legs Daimyo","Monde Legs Delta Camo","Monde Legs Hemlock Camo","Monde Legs Hiro","Morningstar Helmet Icefall","Morozov-SH Arms","Morozov-SH Arms Thule","Morozov-SH Core","Morozov-SH Core Thule","Morozov-SH Helmet","Morozov-SH Helmet Thule","Morozov-SH Legs","Morozov-SH Legs Thule","Novikov Exploration Suit","Novikov Helmet","Oracle Helmet","ORC-mkV Arms","ORC-mkV Core","ORC-mkV Legs","ORC-mkX Arms Woodland","ORC-mkX Core Woodland","ORC-mkX Helmet Woodland","ORC-mkX Legs Woodland","Overlord Arms Supernova","Overlord Core Supernova","Overlord Helmet Supernova","Overlord Legs Supernova","PAB-1 Arms","PAB-1 Core","PAB-1 Legs","Palatino Arms","Palatino Arms Daystar","Palatino Arms Metropolis","Palatino Arms Moonfall","Palatino Arms Sunstone","Palatino Core","Palatino Core Daystar","Palatino Core Metropolis","Palatino Core Moonfall","Palatino Core Sunstone","Palatino Helmet","Palatino Helmet Daystar","Palatino Helmet Metropolis","Palatino Helmet Moonfall","Palatino Helmet Sunstone","Palatino Legs","Palatino Legs Daystar","Palatino Legs Metropolis","Palatino Legs Moonfall","Palatino Legs Sunstone","Pembroke Exploration Suit","Pembroke Helmet","Piecemeal Armor Arms","Piecemeal Armor Core","Piecemeal Armor Legs","Siebe Helmet","Stirling Exploration Suit","Strata Arms","Strata Core","Strata Helmet Shooting Star","Strata Legs","Testudo Arms","Testudo Arms Clanguard","Testudo Arms Combustion","Testudo Arms Earthshake","Testudo Arms Nightveil","Testudo Arms Turfwar","Testudo Core","Testudo Core Clanguard","Testudo Core Combustion","Testudo Core Earthshake","Testudo Core Nightveil","Testudo Core Turfwar","Testudo Helmet","Testudo Helmet Clanguard","Testudo Helmet Combustion","Testudo Helmet Earthshake","Testudo Helmet Nightveil","Testudo Helmet Turfwar","Testudo Legs","Testudo Legs Clanguard","Testudo Legs Combustion","Testudo Legs Earthshake","Testudo Legs Nightveil","Testudo Legs Turfwar","TrueDef-Pro Arms","TrueDef-Pro Core Base","TrueDef-Pro Legs","Venture Arms","Venture Core","Venture Legs"];
 
-// ═══════════════════════════════════════════════
-// QUERY PARSING
-// ═══════════════════════════════════════════════
-function parseQuery(raw) {
-  const s = String(raw).trim();
-  if (!s) return null;
+const W_RAW=["A03 Sniper Rifle","Arclight Desert Shadow Pistol","Arclight Herrero Pistol","Arclight Midnight Pistol","Arclight Nightstalker Pistol","Arclight Pistol","Arclight Stormfall Pistol","Arclight Warhawk Pistol","Arrowhead Sniper Rifle","Atzkav Igniter Sniper Rifle","Atzkav Mirage Sniper Rifle","Atzkav Sniper Rifle","BR-2 Shotgun","C54 SMG","Coda Big Boss Pistol","Coda Nighthawk Pistol","Coda Pistol","Custodian Midnight SMG","Custodian Scorched SMG","Custodian SMG","Deadrig Shotgun","Devastator Midnight Shotgun","Devastator Shotgun","Devastator Warhawk Shotgun","F55 LMG","Fresnel Energy LMG","Fresnel Icebox Energy LMG","Fresnel Rockfall Energy LMG","FS-9 LMG","Gallant Rifle","Karna Brimstone Rifle","Karna Fate Rifle","Karna Rager Rifle","Karna Rifle","Karna Valor Rifle","Killshot Rifle","LH86 Pistol","Lumin V SMG","P6-LR Sniper Rifle","P8-AR Rifle","P8-SC SMG","Parallax Energy Assault Rifle","Parallax Sanguine Energy Assault Rifle","Parallax Shock Trooper Energy Assault Rifle","Parallax Sunstone Energy Assault Rifle","Prism Bonedust Laser Shotgun","Prism Deep Sea Laser Shotgun","Prism Firesteel Laser Shotgun","Prism Laser Shotgun","Pulse Blacklist Pistol","Pulse Laser Pistol","Pulse Rouge Pistol","Pulverizer LMG","Quartz Black Op Energy SMG","Quartz Deadfall Energy SMG","Quartz Energy SMG","Quartz Lumen Energy SMG","R97 Kismet Shotgun","R97 Righteous Shotgun","R97 Scorched Shotgun","R97 Shotgun","Ravager-212 Twin Shotgun","Ripper Sunblock SMG","S71 Rifle","Scalpel Sniper Rifle","Tripledown Pistol","Yubarev Igniter Pistol","Yubarev Mirage Pistol","Yubarev Pistol","Zenith Landslide Laser Sniper Rifle","Zenith Laser Sniper Rifle","Zenith Thunderstrike Laser Sniper Rifle"];
 
-  // Range: "4000-7500"
-  const rangeMatch = s.match(/^(\d+)\s*[-–]\s*(\d+)$/);
-  if (rangeMatch) {
-    const a = parseInt(rangeMatch[1]);
-    const b = parseInt(rangeMatch[2]);
-    return { type: "range", min: Math.min(a, b), max: Math.max(a, b) };
-  }
+const AM_RAW=["A03 Sniper Rifle Magazine (15 cap)","Arclight Pistol Battery (30 cap)","Arrowhead Sniper Rifle Battery (16 cap)","Atzkav Sniper Rifle Battery (8 cap)","BR-2 Shotgun Magazine (12 cap)","C54 SMG Magazine (50 cap)","Coda Pistol Magazine (6 cap)","Custodian SMG Magazine (60 cap)","Deadrig Shotgun Magazine (8 cap)","Devastator Shotgun Battery (12 cap)","F55 LMG Magazine (150 cap)","Fresnel Energy LMG Battery (165 Cap)","FS-9 Magazine (75 cap)","Gallant Rifle Battery (45 cap)","Karna Rifle Battery (35 cap)","Killshot Rifle Magazine (45 Cap)","Lumin V SMG Battery (45 cap)","P6-LR Magazine (8 cap)","P8-AR Rifle Magazine (15 Cap)","P8-SC SMG Magazine (45 cap)","Parallax Rifle Battery (80 Cap)","Prism Laser Shotgun Battery (20 cap)","Pulse Laser Pistol Battery (60 Cap)","Pulverizer LMG Magazine (120 Cap)","Quartz Energy SMG Battery (45 cap)","R97 Shotgun Magazine (18 cap)","Ravager-212 Twin Shotgun Magazine (16 cap)","S71 Rifle Magazine (30 cap)","Scalpel Sniper Rifle Magazine (12 cap)","Tripledown Pistol Magazine (12 Cap)","Yubarev Pistol Battery (10 cap)","Zenith Laser Sniper Rifle Battery (22 Cap)"];
 
-  // Plain number → exact match only
-  const numMatch = s.match(/^(\d+)$/);
-  if (numMatch) {
-    const v = parseInt(numMatch[1]);
-    return { type: "exact", value: v };
-  }
+const TOTAL_BP = A_RAW.length + W_RAW.length + AM_RAW.length;
 
-  return null;
+// ═══ PARSE SETS ═══
+const SLOTS=["Helmet","Core","Arms","Legs","Exploration Suit"];
+function parseArmor(){const m={};let id=1;A_RAW.forEach(name=>{let sb=null,sl=null;for(const s of SLOTS){if(name.includes(` ${s}`)){sb=name.slice(0,name.indexOf(` ${s}`));sl=s;break;}}if(!sb){sb=name;sl="Piece";}if(!m[sb])m[sb]=[];m[sb].push({id:id++,name,slot:sl});});return Object.entries(m).map(([b,items])=>({id:'a-'+b.replace(/[^a-zA-Z0-9]/g,''),name:b,items})).sort((a,b)=>a.name.localeCompare(b.name));}
+
+const W_BASES={"A03 Sniper Rifle":"Sniper","Arclight Pistol":"Pistol","Arrowhead Sniper Rifle":"Sniper","Atzkav Sniper Rifle":"Sniper","BR-2 Shotgun":"Shotgun","C54 SMG":"SMG","Coda Pistol":"Pistol","Custodian SMG":"SMG","Deadrig Shotgun":"Shotgun","Devastator Shotgun":"Shotgun","F55 LMG":"LMG","Fresnel Energy LMG":"LMG","FS-9 LMG":"LMG","Gallant Rifle":"Rifle","Karna Rifle":"Rifle","Killshot Rifle":"Rifle","LH86 Pistol":"Pistol","Lumin V SMG":"SMG","P6-LR Sniper Rifle":"Sniper","P8-AR Rifle":"Rifle","P8-SC SMG":"SMG","Parallax Energy Assault Rifle":"Rifle","Prism Laser Shotgun":"Shotgun","Pulse Laser Pistol":"Pistol","Pulverizer LMG":"LMG","Quartz Energy SMG":"SMG","R97 Shotgun":"Shotgun","Ravager-212 Twin Shotgun":"Shotgun","Ripper Sunblock SMG":"SMG","S71 Rifle":"Rifle","Scalpel Sniper Rifle":"Sniper","Tripledown Pistol":"Pistol","Yubarev Pistol":"Pistol","Zenith Laser Sniper Rifle":"Sniper"};
+
+function parseWeapons(){const fam={};let id=5000;Object.keys(W_BASES).forEach(b=>{fam[b]={t:W_BASES[b],items:[]};});W_RAW.forEach(w=>{if(fam[w]){fam[w].items.push({id:id++,name:w,slot:"Weapon"});return;}const bk=Object.keys(fam).sort((a,b)=>b.length-a.length);for(const b of bk){if(w.split(" ")[0]===b.split(" ")[0]){fam[b].items.push({id:id++,name:w,slot:"Weapon"});return;}}});return Object.entries(fam).map(([b,d])=>({id:'w-'+b.replace(/[^a-zA-Z0-9]/g,''),name:b,type:d.t,items:d.items})).sort((a,b)=>a.name.localeCompare(b.name));}
+
+function parseAmmo(){let id=9000;return AM_RAW.map(a=>({id:id++,name:a}));}
+
+const ARMOR_SETS=parseArmor();
+const WEAPON_SETS=parseWeapons();
+const AMMO_LIST=parseAmmo();
+const ALL_IDS=[...ARMOR_SETS.flatMap(s=>s.items.map(i=>i.id)),...WEAPON_SETS.flatMap(s=>s.items.map(i=>i.id)),...AMMO_LIST.map(a=>a.id)];
+
+// ═══ STATE ═══
+let state={player:null,owned:new Set(),wanted:new Set(),favs:new Set(),tab:'armor',search:'',statusF:'All',incOnly:false,favOnly:false,showFi:false,showTh:false,exp:null};
+
+// ═══ FIREBASE SYNC ═══
+let fbRef=null;
+function initFB(name){
+  const key=name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+  fbRef=db.ref('players/'+key);
+  fbRef.on('value',snap=>{
+    const d=snap.val();
+    if(d){
+      state.owned=new Set(d.owned||[]);
+      state.wanted=new Set(d.wanted||[]);
+      state.favs=new Set(d.favs||[]);
+    }
+    render();
+  });
+}
+function saveFB(){
+  if(!fbRef)return;
+  fbRef.set({owned:[...state.owned],wanted:[...state.wanted],favs:[...state.favs]});
 }
 
-// ═══════════════════════════════════════════════
-// SEARCH
-// ═══════════════════════════════════════════════
-function search(query) {
-  const q = parseQuery(query);
-  if (!q) return { results: [], query: null };
+function toggleOwned(id){
+  if(state.owned.has(id))state.owned.delete(id);else state.owned.add(id);
+  state.wanted.delete(id);
+  saveFB();render();
+}
+function toggleWanted(id){
+  if(state.wanted.has(id))state.wanted.delete(id);else state.wanted.add(id);
+  state.owned.delete(id);
+  saveFB();render();
+}
+function toggleFav(sid){
+  if(state.favs.has(sid))state.favs.delete(sid);else state.favs.add(sid);
+  saveFB();render();
+}
+function markAll(items){
+  const allO=items.every(i=>state.owned.has(i.id));
+  items.forEach(i=>{if(allO)state.owned.delete(i.id);else state.owned.add(i.id);state.wanted.delete(i.id);});
+  saveFB();render();
+}
 
-  const results = [];
-  const prefixStr = q.type === "prefix" ? String(q.value) : null;
+function getS(set){const oc=set.items.filter(i=>state.owned.has(i.id)).length;const wc=set.items.filter(i=>state.wanted.has(i.id)).length;return{oc,wc,t:set.items.length,done:oc===set.items.length};}
 
-  // Ship mining ores
-  ORES.forEach(([name, base, maxRocks, rarity]) => {
-    for (let rocks = 1; rocks <= maxRocks; rocks++) {
-      const sig = base * rocks;
-      let match = null;
+// ═══ RENDER ═══
+function h(tag,attrs,...ch){const el=document.createElement(tag);if(attrs)Object.entries(attrs).forEach(([k,v])=>{if(k==='onclick')el.addEventListener('click',v);else if(k==='class')el.className=v;else if(k==='style'&&typeof v==='object')Object.assign(el.style,v);else el.setAttribute(k,v);});ch.flat().forEach(c=>{if(typeof c==='string')el.appendChild(document.createTextNode(c));else if(c)el.appendChild(c);});return el;}
 
-      if (q.type === "range") {
-        if (sig >= q.min && sig <= q.max) match = "range";
-      } else if (q.type === "exact") {
-        if (sig === q.value) match = "exact";
-      } else if (q.type === "prefix") {
-        if (String(sig).startsWith(prefixStr)) match = "prefix";
-      }
+function render(){
+  const app=document.getElementById('app');
+  app.innerHTML='';
+  if(!state.player){renderLogin(app);return;}
 
-      if (match) results.push({ name, base, rocks, sig, rarity, type: "ship", match });
-    }
+  const totalO=ALL_IDS.filter(id=>state.owned.has(id)).length;
+  const totalW=ALL_IDS.filter(id=>state.wanted.has(id)).length;
+
+  // Header
+  const header=h('div',{class:'header'},
+    h('div',{class:'logo'},h('span',{class:'logo-icon'},'⬡'),h('span',{class:'logo-text'},'SC BLUEPRINTS')),
+    h('div',{class:'header-right'},
+      h('span',{class:'player-badge'},state.player),
+      h('span',{class:'stat-green'},String(totalO)),
+      h('span',{class:'stat-dim'},'/'+TOTAL_BP),
+      h('button',{class:'icon-btn',onclick:()=>{state.showTh=!state.showTh;render();}},'🎨'),
+      h('button',{class:'icon-btn',onclick:()=>{state.player=null;if(fbRef)fbRef.off();fbRef=null;render();},style:{fontSize:'12px'}},'↩')
+    )
+  );
+  app.appendChild(header);
+
+  // Themes
+  if(state.showTh){
+    const themes=h('div',{class:'themes'});
+    [['classic','🌑 Classic'],['light','☀️ Light'],['industrial','⚙️ Industrial'],['explorer','🌿 Explorer'],['tactical','🎯 Tactical'],['pyro','🔥 Pyro'],['military','🚀 UEE']].forEach(([k,l])=>{
+      themes.appendChild(h('button',{class:'theme-btn',onclick:()=>{document.documentElement.className=k;localStorage.setItem('scbp_theme',k);state.showTh=false;render();}},l));
+    });
+    app.appendChild(themes);
+  }
+
+  // Progress
+  const pctO=(totalO/TOTAL_BP*100);const pctW=(totalW/TOTAL_BP*100);
+  const prog=h('div',{class:'progress'},
+    h('div',{class:'progress-bar'},h('div',{class:'progress-gn',style:{width:pctO+'%'}}),h('div',{class:'progress-am',style:{width:pctW+'%'}})),
+    h('div',{class:'progress-stats'},h('span',{style:{color:'var(--gn)'}},'✓ '+totalO),h('span',{style:{color:'var(--am)'}},'★ '+totalW),h('span',{},pctO.toFixed(1)+'%'))
+  );
+  app.appendChild(prog);
+
+  // Tabs
+  const tabs=h('div',{class:'tabs'});
+  [['armor','🛡️ Armor',A_RAW.length],['weapons','🔫 Weapons',W_RAW.length],['ammo','📦 Ammo',AM_RAW.length]].forEach(([k,l,n])=>{
+    tabs.appendChild(h('button',{class:'tab'+(state.tab===k?' active':''),onclick:()=>{state.tab=k;state.exp=null;render();}},l+' ('+n+')'));
   });
+  app.appendChild(tabs);
 
-  // Other mining (ROC/FPS/Salvage)
-  OTHER_MINING.forEach(o => {
-    for (let rocks = 1; rocks <= o.maxRocks; rocks++) {
-      const sig = o.base * rocks;
-      let match = null;
+  // Search
+  const searchBar=h('div',{class:'search-bar'});
+  const inp=h('input',{class:'search-input',placeholder:'Search...',value:state.search});
+  inp.addEventListener('input',e=>{state.search=e.target.value;render();});
+  searchBar.appendChild(inp);
+  searchBar.appendChild(h('button',{class:'filter-btn'+(state.showFi?' active':''),onclick:()=>{state.showFi=!state.showFi;render();}},'▼'));
+  app.appendChild(searchBar);
 
-      if (q.type === "range") {
-        if (sig >= q.min && sig <= q.max) match = "range";
-      } else if (q.type === "exact") {
-        if (sig === q.value) match = "exact";
-      } else if (q.type === "prefix") {
-        if (String(sig).startsWith(prefixStr)) match = "prefix";
-      }
+  // Filters
+  if(state.showFi){
+    const fi=h('div',{class:'filters'});
+    const fOpts=state.tab==='ammo'?['All','Owned','Wanted','Untouched']:['All','Owned','Wanted','Untouched','Complete'];
+    fOpts.forEach(o=>{fi.appendChild(h('button',{class:'fbtn'+(state.statusF===o?' active':''),onclick:()=>{state.statusF=o;render();}},o));});
+    if(state.tab!=='ammo'){
+      fi.appendChild(h('button',{class:'fbtn'+(state.incOnly?' active':''),onclick:()=>{state.incOnly=!state.incOnly;render();}},'Incomplete'));
+      fi.appendChild(h('button',{class:'fbtn'+(state.favOnly?' active':''),onclick:()=>{state.favOnly=!state.favOnly;render();}},'★ Favs'));
+    }
+    fi.appendChild(h('button',{class:'fbtn',onclick:()=>{state.search='';state.statusF='All';state.incOnly=false;state.favOnly=false;render();}},'↺'));
+    app.appendChild(fi);
+  }
 
-      if (match) results.push({
-        name: o.label, base: o.base, rocks, sig,
-        rarity: o.type, type: o.type, match
+  // Content
+  if(state.tab==='armor'||state.tab==='weapons'){
+    let sets=state.tab==='armor'?ARMOR_SETS:WEAPON_SETS;
+    if(state.search){const terms=state.search.toLowerCase().split(/\s+/);sets=sets.filter(s=>{const hay=[s.name,...s.items.map(i=>i.name)].join(' ').toLowerCase();return terms.every(t=>hay.includes(t));});}
+    if(state.favOnly)sets=sets.filter(s=>state.favs.has(s.id));
+    if(state.incOnly)sets=sets.filter(s=>{const st=getS(s);return st.oc<st.t;});
+    if(state.statusF==='Owned')sets=sets.filter(s=>getS(s).oc>0);
+    if(state.statusF==='Wanted')sets=sets.filter(s=>getS(s).wc>0);
+    if(state.statusF==='Untouched')sets=sets.filter(s=>{const st=getS(s);return st.oc===0&&st.wc===0;});
+    if(state.statusF==='Complete')sets=sets.filter(s=>getS(s).done);
+
+    app.appendChild(h('div',{class:'count'},sets.length+' sets · '+sets.reduce((s,x)=>s+x.items.length,0)+' blueprints'));
+
+    if(!sets.length){app.appendChild(h('div',{class:'empty'},h('div',{class:'empty-icon'},'🔍'),h('div',{class:'empty-text'},'Nothing found')));
+    }else{
+      sets.forEach(set=>{
+        const st=getS(set);const isE=state.exp===set.id;const isF=state.favs.has(set.id);
+        const row=h('div',{class:'set-row'+(isE?' expanded':'')});
+
+        // Header
+        const hdr=h('div',{class:'set-header',onclick:()=>{state.exp=isE?null:set.id;render();}});
+        const info=h('div',{class:'set-info'});
+        const nameRow=h('div',{style:{display:'flex',alignItems:'center',flexWrap:'wrap',gap:'4px'}});
+        nameRow.appendChild(h('span',{class:'set-name'+(st.done?' done':'')},set.name));
+        if(set.type)nameRow.appendChild(h('span',{class:'set-type'},set.type));
+        if(st.done)nameRow.appendChild(h('span',{class:'set-complete'},'✓'));
+        info.appendChild(nameRow);
+        const dots=h('div',{class:'dots'});
+        set.items.forEach(i=>{dots.appendChild(h('span',{class:'dot'+(state.owned.has(i.id)?' owned':state.wanted.has(i.id)?' wanted':'')}));});
+        info.appendChild(dots);
+        hdr.appendChild(info);
+
+        const cnt=h('div',{class:'set-count'});
+        cnt.appendChild(h('div',{class:'set-count-main'+(st.done?' done':'')},st.oc+'/'+st.t));
+        if(st.wc>0)cnt.appendChild(h('div',{class:'set-count-wanted'},'★'+st.wc));
+        hdr.appendChild(cnt);
+
+        const favBtn=h('button',{class:'bb'+(isF?' active-am':''),onclick:e=>{e.stopPropagation();toggleFav(set.id);}},isF?'★':'☆');
+        hdr.appendChild(favBtn);
+        row.appendChild(hdr);
+
+        // Detail
+        if(isE){
+          const det=h('div',{class:'set-detail'});
+          const acts=h('div',{class:'set-actions'});
+          acts.appendChild(h('button',{class:'bb'+(st.done?' active-gn':''),onclick:()=>markAll(set.items)},st.done?'↩ Unmark':'✓✓ All'));
+          det.appendChild(acts);
+
+          set.items.forEach(item=>{
+            const isO=state.owned.has(item.id);const isW=state.wanted.has(item.id);
+            const ir=h('div',{class:'item-row'});
+            ir.appendChild(h('div',{class:'item-bar'+(isO?' owned':isW?' wanted':'')}));
+            const nameEl=h('span',{class:'item-name'+(isO?' owned':isW?' wanted':''),onclick:e=>{e.stopPropagation();navigator.clipboard.writeText(item.name).then(()=>{nameEl.style.opacity='0.5';setTimeout(()=>{nameEl.style.opacity='1';},300);});}},item.name);
+            nameEl.title='Tap to copy name';
+            ir.appendChild(nameEl);
+            ir.appendChild(h('button',{class:'bb'+(isO?' active-gn':''),onclick:()=>toggleOwned(item.id)},'✓'));
+            ir.appendChild(h('button',{class:'bb'+(isW?' active-am':''),onclick:()=>toggleWanted(item.id)},'★'));
+            det.appendChild(ir);
+          });
+          row.appendChild(det);
+        }
+        app.appendChild(row);
       });
     }
-  });
-
-  // Sort: exact first, then by sig
-  const order = { exact: 0, prefix: 1, range: 2 };
-  results.sort((a, b) => {
-    if (order[a.match] !== order[b.match]) return order[a.match] - order[b.match];
-    return a.sig - b.sig;
-  });
-
-  return { results, query: q };
-}
-
-// ═══════════════════════════════════════════════
-// RENDER RESULTS
-// ═══════════════════════════════════════════════
-const RARITY_LABELS = {
-  legendary: "Legendary",
-  epic: "Epic",
-  rare: "Rare",
-  uncommon: "Uncommon",
-  common: "Common",
-  roc: "ROC",
-  fps: "FPS",
-  salvage: "Salvage",
-};
-
-function renderResults() {
-  const input = document.getElementById("scanInput").value.trim();
-  const div = document.getElementById("results");
-  div.innerHTML = "";
-
-  if (!input) {
-    div.innerHTML = `
-      <div class="empty-state">
-        <span class="icon">⌬</span>
-        <div class="label">Awaiting Scanner Input</div>
-      </div>`;
-    return;
   }
 
-  const isRange = /^\d+\s*[-–]\s*\d+$/.test(input);
-  const isNumber = /^\d+$/.test(input);
+  // Ammo tab
+  if(state.tab==='ammo'){
+    let list=AMMO_LIST;
+    if(state.search){const terms=state.search.toLowerCase().split(/\s+/);list=list.filter(a=>terms.every(t=>a.name.toLowerCase().includes(t)));}
+    if(state.statusF==='Owned')list=list.filter(a=>state.owned.has(a.id));
+    if(state.statusF==='Wanted')list=list.filter(a=>state.wanted.has(a.id));
+    if(state.statusF==='Untouched')list=list.filter(a=>!state.owned.has(a.id)&&!state.wanted.has(a.id));
 
-  // Plain number — need at least 3 digits
-  if (isNumber && input.length < 3) {
-    div.innerHTML = `
-      <div class="empty-state">
-        <span class="icon">▸ ${input}</span>
-        <div class="label">Need ${3 - input.length} more digit${3 - input.length > 1 ? 's' : ''}</div>
-      </div>`;
-    return;
-  }
-
-  if (!isNumber && !isRange) {
-    div.innerHTML = `
-      <div class="empty-state">
-        <span class="icon">⚠</span>
-        <div class="label">Use digits only · or range like 4000-7500</div>
-      </div>`;
-    return;
-  }
-
-  // Determine search mode: exact for full numbers (5+ digits), prefix for partial (3-4 digits)
-  // Heuristic: if input looks like a complete signature, try exact match first
-  let searchInput = input;
-  let useExact = false;
-
-  if (isNumber) {
-    // Try exact match first
-    const exactQuery = { type: "exact", value: parseInt(input), min: 0, max: 0 };
-    const exactResults = [];
-    ORES.forEach(([name, base, maxRocks, rarity]) => {
-      for (let rocks = 1; rocks <= maxRocks; rocks++) {
-        if (base * rocks === parseInt(input)) exactResults.push(true);
-      }
-    });
-    OTHER_MINING.forEach(o => {
-      for (let rocks = 1; rocks <= o.maxRocks; rocks++) {
-        if (o.base * rocks === parseInt(input)) exactResults.push(true);
-      }
-    });
-    useExact = exactResults.length > 0;
-  }
-
-  // Build query
-  let q;
-  if (isRange) {
-    q = parseQuery(input);
-  } else if (useExact) {
-    q = { type: "exact", value: parseInt(input) };
-  } else {
-    q = { type: "prefix", value: parseInt(input) };
-  }
-
-  // Run search
-  const results = [];
-  const prefixStr = q.type === "prefix" ? String(q.value) : null;
-
-  ORES.forEach(([name, base, maxRocks, rarity]) => {
-    for (let rocks = 1; rocks <= maxRocks; rocks++) {
-      const sig = base * rocks;
-      let match = null;
-      if (q.type === "range") {
-        if (sig >= q.min && sig <= q.max) match = "range";
-      } else if (q.type === "exact") {
-        if (sig === q.value) match = "exact";
-      } else if (q.type === "prefix") {
-        if (String(sig).startsWith(prefixStr)) match = "prefix";
-      }
-      if (match) results.push({ name, base, rocks, sig, rarity, type: "ship", match });
-    }
-  });
-
-  OTHER_MINING.forEach(o => {
-    for (let rocks = 1; rocks <= o.maxRocks; rocks++) {
-      const sig = o.base * rocks;
-      let match = null;
-      if (q.type === "range") {
-        if (sig >= q.min && sig <= q.max) match = "range";
-      } else if (q.type === "exact") {
-        if (sig === q.value) match = "exact";
-      } else if (q.type === "prefix") {
-        if (String(sig).startsWith(prefixStr)) match = "prefix";
-      }
-      if (match) results.push({
-        name: o.label, base: o.base, rocks, sig,
-        rarity: o.type, type: o.type, match
+    app.appendChild(h('div',{class:'count'},list.length+' ammo blueprints'));
+    if(!list.length){app.appendChild(h('div',{class:'empty'},h('div',{class:'empty-icon'},'🔍'),h('div',{class:'empty-text'},'Nothing found')));
+    }else{
+      list.forEach(ammo=>{
+        const isO=state.owned.has(ammo.id);const isW=state.wanted.has(ammo.id);
+        const ir=h('div',{class:'item-row',style:{padding:'6px 16px'}});
+        ir.appendChild(h('div',{class:'item-bar'+(isO?' owned':isW?' wanted':'')}));
+        const nameEl=h('span',{class:'item-name'+(isO?' owned':isW?' wanted':''),onclick:()=>{navigator.clipboard.writeText(ammo.name).then(()=>{nameEl.style.opacity='0.5';setTimeout(()=>{nameEl.style.opacity='1';},300);});}},ammo.name);
+        nameEl.title='Tap to copy name';
+        ir.appendChild(nameEl);
+        ir.appendChild(h('button',{class:'bb'+(isO?' active-gn':''),onclick:()=>toggleOwned(ammo.id)},'✓'));
+        ir.appendChild(h('button',{class:'bb'+(isW?' active-am':''),onclick:()=>toggleWanted(ammo.id)},'★'));
+        app.appendChild(ir);
       });
     }
-  });
-
-  // Sort by signature
-  results.sort((a, b) => a.sig - b.sig);
-
-  if (!results.length) {
-    div.innerHTML = `
-      <div class="empty-state">
-        <span class="icon">∅</span>
-        <div class="label">No matching signatures</div>
-      </div>`;
-    return;
   }
 
-  // Meta header
-  let metaText;
-  if (q.type === "range") {
-    metaText = `Range ${q.min.toLocaleString()} – ${q.max.toLocaleString()}`;
-  } else if (q.type === "exact") {
-    metaText = `Exact match · ${q.value.toLocaleString()}`;
-  } else {
-    metaText = `Starts with ${q.value.toLocaleString()}…`;
-  }
-
-  let html = `
-    <div class="results-meta">
-      <span>${metaText}</span>
-      <span class="count">${results.length} match${results.length > 1 ? 'es' : ''}</span>
-    </div>`;
-
-  // Show full detail rows for exact match (always small set)
-  // Show compact pool rows for prefix/range (potentially many)
-  if (q.type === "exact") {
-    results.forEach(r => { html += renderResultRow(r); });
-  } else {
-    results.forEach(r => { html += renderPoolRow(r); });
-  }
-
-  div.innerHTML = html;
-  div.classList.add("fade-in");
-  setTimeout(() => div.classList.remove("fade-in"), 300);
+  // Footer
+  app.appendChild(h('div',{class:'footer'},
+    'SC Blueprint Tracker · '+TOTAL_BP+' blueprints · Alpha 4.7',
+    h('br'),'Community tool · Not affiliated with CIG'
+  ));
 }
 
-function renderResultRow(r) {
-  const matchBadge = r.match === "exact" ? "EXACT MATCH" : "IN RANGE";
-  const matchClass = r.match === "exact" ? "badge-exact" : "badge-range";
+function renderLogin(app){
+  const box=h('div',{class:'login-screen'},
+    h('div',{class:'login-box'},
+      h('div',{class:'login-icon'},'⬡'),
+      h('div',{class:'login-title'},'SC Blueprint Tracker'),
+      h('div',{class:'login-sub'},TOTAL_BP+' blueprints · Star Citizen 4.7'),
+      h('div',{class:'login-label'},'Enter your nickname:')
+    )
+  );
+  const inp=h('input',{class:'login-input',placeholder:'Your name...'});
+  const btn=h('button',{class:'login-btn',onclick:()=>{
+    const name=inp.value.trim();if(!name)return;
+    state.player=name;localStorage.setItem('scbp_player',name);
+    initFB(name);
+  }},'Enter Tracker');
+  inp.addEventListener('input',()=>{btn.className=inp.value.trim()?'login-btn ready':'login-btn';});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){btn.click();}});
+  box.firstChild.appendChild(inp);
+  box.firstChild.appendChild(btn);
+  box.firstChild.appendChild(h('div',{class:'login-hint'},'Each player tracks their own collection. Share this page with friends!'));
+  app.appendChild(box);
 
-  return `
-    <div class="result-row ${r.match}">
-      <div class="result-rarity-bar bar-${r.rarity}"></div>
-      <div class="result-info">
-        <div class="result-name">${r.name}</div>
-        <div class="result-meta">
-          <span class="rarity-tag tag-${r.rarity}">${RARITY_LABELS[r.rarity]}</span>
-          <span>·</span>
-          <span>Base ${r.base.toLocaleString()}</span>
-        </div>
-      </div>
-      <div class="result-sig">
-        <div class="result-sig-val">${r.sig.toLocaleString()}</div>
-        <div class="result-sig-cluster">×${r.rocks} ROCK${r.rocks > 1 ? 'S' : ''}</div>
-        <span class="match-badge ${matchClass}">${matchBadge}</span>
-      </div>
-    </div>`;
+  // Auto-login
+  const last=localStorage.getItem('scbp_player');
+  if(last){inp.value=last;btn.className='login-btn ready';}
 }
 
-function renderPoolRow(r) {
-  return `
-    <div class="pool-row ${r.match}">
-      <div class="result-rarity-bar bar-${r.rarity}"></div>
-      <div class="pool-name">
-        <span>${r.name} <span class="x-rocks">×${r.rocks}</span></span>
-      </div>
-      <div>
-        <span class="pool-sig">${r.sig.toLocaleString()}</span>
-      </div>
-    </div>`;
-}
-
-// ═══════════════════════════════════════════════
-// REFERENCE TABLE (full grid)
-// ═══════════════════════════════════════════════
-let refVisible = false;
-function toggleRef() {
-  refVisible = !refVisible;
-  const btn = document.getElementById("refBtn");
-  const div = document.getElementById("refTable");
-  btn.textContent = refVisible ? "▴ Hide Reference Grid" : "▾ Show Reference Grid";
-  btn.classList.toggle("active", refVisible);
-
-  if (!refVisible) { div.style.display = "none"; return; }
-
-  const MAX_COLS = 10;
-  let html = '';
-
-  html += `<div class="ref-table-wrap">`;
-  html += `<table class="ref-table"><thead><tr>`;
-  html += `<th class="col-name">Ore</th>`;
-  for (let i = 1; i <= MAX_COLS; i++) html += `<th class="col-num">×${i}</th>`;
-  html += `</tr></thead><tbody>`;
-
-  ORES.forEach(([name, base, maxRocks, rarity]) => {
-    const dotVar = rarity === 'legendary' ? 'leg' : rarity === 'epic' ? 'epic' : rarity === 'rare' ? 'rare' : rarity === 'uncommon' ? 'unc' : 'com';
-    html += `<tr><td class="cell-name"><span class="ref-dot" style="background:var(--r-${dotVar})"></span>${name}</td>`;
-    for (let i = 1; i <= MAX_COLS; i++) {
-      const sig = base * i;
-      const cls = i === 1 ? "first" : "";
-      html += `<td class="cell-sig ${cls}">${sig.toLocaleString()}</td>`;
-    }
-    html += `</tr>`;
-  });
-
-  html += `</tbody></table></div>`;
-
-  // Other mining types
-  html += `<div class="ref-other">`;
-  html += `<div class="ref-other-header">▸ Other Mining Types</div>`;
-  OTHER_MINING.forEach(o => {
-    const dotVar = o.type === 'roc' ? 'roc' : o.type === 'fps' ? 'fps' : 'sal';
-    html += `
-      <div class="ref-other-row">
-        <div class="ref-other-name">
-          <div class="ref-dot" style="background:var(--r-${dotVar});width:8px;height:8px;border-radius:50%"></div>
-          ${o.label}
-        </div>
-        <div class="ref-other-formula">base <b>${o.base.toLocaleString()}</b> · ×1–${o.maxRocks}</div>
-      </div>`;
-  });
-  html += `</div>`;
-
-  div.innerHTML = html;
-  div.style.display = "block";
-}
-
-// ═══════════════════════════════════════════════
-// MASS CALCULATOR
-// ═══════════════════════════════════════════════
-function calcMass() {
-  const rockStr = document.getElementById("massRock").value.replace(",", ".");
-  const pctStr = document.getElementById("massPct").value.replace(",", ".");
-  const rock = parseFloat(rockStr);
-  const pct = parseFloat(pctStr);
-  const resultEl = document.getElementById("massResult");
-  const formulaEl = document.getElementById("massFormula");
-
-  if (isNaN(rock) || isNaN(pct) || rock <= 0 || pct < 0) {
-    resultEl.textContent = "—";
-    formulaEl.innerHTML = "Enter rock mass and valuable percentage";
-    return;
-  }
-
-  const yieldVal = (rock * pct / 100);
-  const display = yieldVal < 0.01 ? yieldVal.toFixed(4) : yieldVal.toFixed(2);
-
-  resultEl.textContent = display;
-  formulaEl.innerHTML = `<span class="v">${rock}</span> SCU × <span class="v">${pct}%</span> = <span class="v">${display}</span> SCU valuable`;
-}
-
-// ═══════════════════════════════════════════════
-// TABS
-// ═══════════════════════════════════════════════
-function switchTab(tab) {
-  document.getElementById("tab-scan").classList.toggle("active", tab === "scan");
-  document.getElementById("tab-mass").classList.toggle("active", tab === "mass");
-  document.getElementById("view-scan").style.display = tab === "scan" ? "" : "none";
-  document.getElementById("view-mass").style.display = tab === "mass" ? "" : "none";
-}
-
-// ═══════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════
-document.getElementById("scanInput").addEventListener("input", renderResults);
-document.getElementById("massRock").addEventListener("input", calcMass);
-document.getElementById("massPct").addEventListener("input", calcMass);
-renderResults();
+// Init
+const savedTheme=localStorage.getItem('scbp_theme');
+if(savedTheme)document.documentElement.className=savedTheme;
+render();
 </script>
 </body>
 </html>
