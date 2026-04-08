@@ -603,13 +603,242 @@ input{outline:none}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .fade-in{animation:fadeUp .25s ease-out}
 
-@media(max-width:480px){
-  .panel{margin:12px}
-  .mass-result-value{font-size:36px}
-  .scan-input{font-size:20px;padding:16px 12px}
-  .ref-table{font-size:9px}
-  .ref-table th,.ref-table td{padding:5px 4px}
+/* ═══════════════════════════════════════════
+   BREAK ADVISOR — styles
+═══════════════════════════════════════════ */
+.advisor-inputs{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
 }
+.advisor-input-block{
+  background:var(--bg3);
+  border:1px solid var(--line);
+  padding:12px 10px;
+}
+.advisor-input-block .input-label{
+  font-size:9px;
+  letter-spacing:1.5px;
+  color:var(--tx3);
+  text-transform:uppercase;
+  text-align:center;
+  margin-bottom:8px;
+}
+.advisor-input{
+  width:100%;
+  background:#1f2733;
+  border:1px solid var(--line2);
+  color:var(--tx);
+  padding:10px 8px;
+  font-family:var(--mono);
+  font-size:18px;
+  font-weight:700;
+  text-align:center;
+  font-variant-numeric:tabular-nums;
+}
+.advisor-input:focus{
+  border-color:var(--amber);
+  box-shadow:0 0 0 1px var(--amber-dim) inset;
+}
+.advisor-unit{
+  text-align:center;
+  font-size:9px;
+  color:var(--tx3);
+  letter-spacing:1.5px;
+  margin-top:6px;
+  text-transform:uppercase;
+}
+
+.advisor-btn{
+  width:100%;
+  padding:14px;
+  margin-top:14px;
+  background:var(--amber);
+  color:var(--bg);
+  border:none;
+  font-family:var(--display);
+  font-weight:900;
+  font-size:13px;
+  letter-spacing:3px;
+  cursor:pointer;
+  text-transform:uppercase;
+  transition:all .15s;
+}
+.advisor-btn:hover{background:#ffd24a;box-shadow:0 0 16px rgba(251,191,36,.4)}
+.advisor-btn:active{transform:translateY(1px)}
+.advisor-btn:disabled{background:var(--dim);color:var(--tx3);cursor:not-allowed;box-shadow:none}
+
+.rock-summary{
+  background:var(--bg3);
+  border:1px solid var(--line);
+  padding:14px;
+  margin-top:14px;
+}
+.rock-summary-row{
+  display:flex;
+  justify-content:space-between;
+  padding:6px 0;
+  font-size:11px;
+}
+.rock-summary-row .label{color:var(--tx3);letter-spacing:1px;text-transform:uppercase;font-size:9px}
+.rock-summary-row .value{color:var(--tx);font-weight:700;font-variant-numeric:tabular-nums}
+.rock-summary-row .value.hl{color:var(--amber)}
+
+.inst-badge{
+  display:inline-block;
+  padding:3px 8px;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  border:1px solid currentColor;
+}
+.inst-safe{color:var(--green)}
+.inst-manageable{color:#a3e635}
+.inst-challenging{color:var(--amber)}
+.inst-problematic{color:#fb923c}
+.inst-extreme{color:var(--red)}
+
+.setup-card{
+  background:var(--bg3);
+  border:1px solid var(--line);
+  margin-top:12px;
+  position:relative;
+  overflow:hidden;
+}
+.setup-card::before{
+  content:'';
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:3px;
+}
+.setup-card.safety-safe::before{background:var(--green)}
+.setup-card.safety-marginal::before{background:var(--amber)}
+.setup-card.safety-risky::before{background:var(--red)}
+
+.setup-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 14px 10px;
+  border-bottom:1px solid var(--line);
+}
+.setup-rank{
+  font-family:var(--display);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:2px;
+  color:var(--tx3);
+}
+.setup-rank .num{color:var(--amber);font-size:14px;margin-right:4px}
+.setup-safety{
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  padding:3px 8px;
+  text-transform:uppercase;
+}
+.setup-safety.safe{background:rgba(74,222,128,.12);color:var(--green);border:1px solid var(--green)}
+.setup-safety.marginal{background:rgba(251,191,36,.12);color:var(--amber);border:1px solid var(--amber)}
+.setup-safety.risky{background:rgba(248,113,113,.12);color:var(--red);border:1px solid var(--red)}
+
+.setup-body{padding:12px 14px}
+.setup-line{
+  display:flex;
+  padding:5px 0;
+  font-size:11px;
+  gap:8px;
+}
+.setup-line .k{
+  color:var(--tx3);
+  font-size:9px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  min-width:68px;
+  padding-top:2px;
+}
+.setup-line .v{
+  color:var(--tx);
+  flex:1;
+}
+.setup-line .v .chip{
+  display:inline-block;
+  background:var(--bg2);
+  border:1px solid var(--line2);
+  padding:2px 7px;
+  margin:1px 3px 1px 0;
+  font-size:10px;
+  color:var(--amber);
+}
+.setup-line .v .chip.active{border-color:var(--amber-dim);background:rgba(251,191,36,.08)}
+.setup-line .v .chip.gadget{border-color:#60a5fa40;color:var(--blue);background:rgba(96,165,250,.08)}
+
+.setup-metrics{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+  padding:10px 14px;
+  background:var(--bg2);
+  border-top:1px solid var(--line);
+}
+.setup-metric{
+  text-align:center;
+}
+.setup-metric .mlabel{
+  font-size:8px;
+  color:var(--tx3);
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+.setup-metric .mvalue{
+  font-family:var(--display);
+  font-size:15px;
+  font-weight:700;
+  color:var(--tx);
+  margin-top:3px;
+  font-variant-numeric:tabular-nums;
+}
+.setup-metric .mvalue.good{color:var(--green)}
+.setup-metric .mvalue.warn{color:var(--amber)}
+.setup-metric .mvalue.bad{color:var(--red)}
+
+.setup-why{
+  padding:10px 14px;
+  background:rgba(251,191,36,.03);
+  border-top:1px solid var(--line);
+  font-size:10px;
+  color:var(--tx2);
+  line-height:1.5;
+}
+.setup-why strong{color:var(--amber);font-weight:700}
+
+.advisor-empty{
+  padding:30px 20px;
+  text-align:center;
+  color:var(--tx3);
+  font-size:11px;
+  line-height:1.6;
+}
+.advisor-empty .icon{font-size:32px;margin-bottom:10px;opacity:.4}
+
+.advisor-disclaimer{
+  padding:10px 14px;
+  background:rgba(96,165,250,.04);
+  border:1px solid rgba(96,165,250,.2);
+  margin-top:14px;
+  font-size:10px;
+  color:var(--tx2);
+  line-height:1.6;
+}
+.advisor-disclaimer strong{color:var(--blue)}
+
+@media(max-width:480px){
+  .advisor-input{font-size:16px}
+  .setup-metric .mvalue{font-size:13px}
+  .setup-line .k{min-width:56px}
+  .tab{font-size:10px;letter-spacing:1.5px}
+}
+
 </style>
 </head>
 <body>
@@ -634,6 +863,7 @@ input{outline:none}
 <div class="tabs">
   <button class="tab active" id="tab-scan" onclick="switchTab('scan')">◊ SCAN ID</button>
   <button class="tab" id="tab-mass" onclick="switchTab('mass')">◊ MASS CALC</button>
+  <button class="tab" id="tab-break" onclick="switchTab('break')">◊ BREAK</button>
 </div>
 
 <div id="view-scan">
@@ -739,6 +969,58 @@ input{outline:none}
 </div>
 
 </div>
+
+<div id="view-break" style="display:none">
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title">▸ Break Advisor</div>
+    <div class="panel-meta">MOLE SOLO</div>
+  </div>
+  <div class="panel-body">
+
+    <div class="advisor-inputs">
+      <div class="advisor-input-block">
+        <div class="input-label">Mass</div>
+        <input class="advisor-input" id="brMass" type="text" inputmode="decimal" placeholder="8500" autocomplete="off">
+        <div class="advisor-unit">units</div>
+      </div>
+      <div class="advisor-input-block">
+        <div class="input-label">Resistance</div>
+        <input class="advisor-input" id="brRes" type="text" inputmode="decimal" placeholder="32" autocomplete="off">
+        <div class="advisor-unit">percent</div>
+      </div>
+      <div class="advisor-input-block">
+        <div class="input-label">Instability</div>
+        <input class="advisor-input" id="brInst" type="text" inputmode="decimal" placeholder="150" autocomplete="off">
+        <div class="advisor-unit">flat</div>
+      </div>
+    </div>
+
+    <button class="advisor-btn" id="brBtn" onclick="computeAdvisor()">◊ ANALYZE ROCK</button>
+
+  </div>
+</div>
+
+<div id="brResults"></div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title">▸ Laser Fleet</div>
+    <div class="panel-meta">FIXED LOADOUT</div>
+  </div>
+  <div class="panel-body" style="font-size:11px;color:var(--tx2);line-height:1.7">
+    <div>• <b style="color:var(--amber)">Helix II</b> — 4080 MW, 3 slots, -30% R</div>
+    <div>• <b style="color:var(--amber)">Hofstede-S2</b> ×2 — 3360 MW, 2 slots, -30% R, +10% LI</div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:10px;color:var(--tx3)">
+      Solo mining: 1 laser active at a time. Advisor picks the best laser, modules, and gadgets for your scanned rock.
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div id="view-mass-end-marker" style="display:none"></div>
 
 <div class="footer">
   <div class="line uppercase">⛏ MinerScan</div>
@@ -1155,13 +1437,564 @@ function calcMass() {
 }
 
 // ═══════════════════════════════════════════════
+// BREAK ADVISOR — data & logic
+// ═══════════════════════════════════════════════
+
+// Lasers (MOLE solo fleet)
+const BR_LASERS = [
+  {
+    id: "helix2",
+    name: "Helix II",
+    maxPower: 4080,
+    slots: 3,
+    R: -30,  // Resistance modifier %
+    LI: 0,   // Laser Instability modifier %
+    OCWS: -40,
+  },
+  {
+    id: "hofstede2",
+    name: "Hofstede-S2",
+    maxPower: 3360,
+    slots: 2,
+    R: -30,
+    LI: 10,
+    OCWS: 60,
+  },
+];
+
+// Modules in play (T3 passives + break-relevant actives)
+// Fields used by calculator: power (MLP%), R, LI, OCWS
+const BR_MODULES = [
+  // Passive T3
+  {id:"focus3",   name:"Focus III",   type:"passive", power:95,  R:0,   LI:0,   OCWS:40},
+  {id:"rieger3",  name:"Rieger-C3",   type:"passive", power:125, R:0,   LI:0,   OCWS:-1},
+  {id:"torrent3", name:"Torrent III", type:"passive", power:100, R:0,   LI:0,   OCWS:-1},
+  // Active
+  {id:"lifeline", name:"Lifeline",    type:"active",  power:100, R:-15, LI:-20, OCWS:0},
+  {id:"optimum",  name:"Optimum",     type:"active",  power:85,  R:0,   LI:-10, OCWS:0},
+  {id:"rime",     name:"Rime",        type:"active",  power:85,  R:-25, LI:0,   OCWS:0},
+  {id:"stampede", name:"Stampede",    type:"active",  power:135, R:0,   LI:-10, OCWS:0},
+  {id:"surge",    name:"Surge",       type:"active",  power:150, R:-15, LI:10,  OCWS:0},
+  {id:"torpid",   name:"Torpid",      type:"active",  power:100, R:0,   LI:0,   OCWS:0},
+];
+
+// Gadgets — stack additively, max 3 per rock
+// Fields: R, LI, OCWS
+const BR_GADGETS = [
+  {id:"boremax",  name:"Boremax",  R:10,  LI:-70, OCWS:0},
+  {id:"okunis",   name:"Okunis",   R:0,   LI:0,   OCWS:50},
+  {id:"optimax",  name:"Optimax",  R:-30, LI:0,   OCWS:-30},
+  {id:"sabir",    name:"Sabir",    R:-50, LI:0,   OCWS:50},
+  {id:"stalwart", name:"Stalwart", R:0,   LI:-35, OCWS:-30},
+  {id:"waveshift",name:"Waveshift",R:0,   LI:-35, OCWS:100},
+];
+
+// User's default MOLE loadout — if this works, don't bother recommending changes
+// Helix II:    Rieger-C3 + Stampede + Rieger-C3
+// Hofstede #1: Rieger-C3 + Torrent III
+// Hofstede #2: Focus III + Torrent III
+const BR_DEFAULT_LOADOUTS = [
+  {laserId:"helix2",    moduleIds:["rieger3","stampede","rieger3"], label:"Helix II (default)"},
+  {laserId:"hofstede2", moduleIds:["rieger3","torrent3"],           label:"Hofstede #1 (default)"},
+  {laserId:"hofstede2", moduleIds:["focus3","torrent3"],            label:"Hofstede #2 (default)"},
+];
+
+// Constants
+const BR_CM = 0.19;                 // Power breakpoint coefficient (Mort13 dataset)
+const BR_SAFETY_MARGIN = 1.20;      // Require 20% power surplus
+const BR_TOP_N = 5;                 // Show top 5 setups
+
+// Instability thresholds (heuristic, tuned so typical default loadouts reach SAFE for common rocks)
+// [maxInst, label, cssClass, minGZ, minLI]
+// minLI is the MAX acceptable laser instability factor (lower = better control)
+const BR_INST_LEVELS = [
+  {max:100,    label:"SAFE",        cls:"safe",        minGZ:1.0, minLI:1.15},
+  {max:250,    label:"MANAGEABLE",  cls:"manageable",  minGZ:1.2, minLI:1.0},
+  {max:400,    label:"CHALLENGING", cls:"challenging", minGZ:1.4, minLI:0.95},
+  {max:600,    label:"PROBLEMATIC", cls:"problematic", minGZ:1.7, minLI:0.8},
+  {max:Infinity,label:"EXTREME",    cls:"extreme",     minGZ:2.0, minLI:0.7},
+];
+
+function brInstLevel(inst) {
+  return BR_INST_LEVELS.find(l => inst < l.max) || BR_INST_LEVELS[BR_INST_LEVELS.length-1];
+}
+
+// Generate module combinations with repetition
+// Uses "combinations with replacement" — order doesn't matter, modules can repeat
+function brModuleCombos(slots) {
+  const n = BR_MODULES.length;
+  const result = [[]];  // include empty (no modules)
+  
+  function gen(startIdx, current) {
+    if (current.length === slots) return;
+    for (let i = startIdx; i < n; i++) {
+      const next = [...current, i];
+      result.push([...next]);
+      gen(i, next);  // allow same module again
+    }
+  }
+  gen(0, []);
+  return result.map(combo => combo.map(i => BR_MODULES[i]));
+}
+
+// Generate gadget combinations (0 to 3 gadgets, combinations with replacement)
+function brGadgetCombos() {
+  const n = BR_GADGETS.length;
+  const result = [[]];
+  
+  function gen(startIdx, current, maxDepth) {
+    if (current.length === maxDepth) return;
+    for (let i = startIdx; i < n; i++) {
+      const next = [...current, i];
+      result.push([...next]);
+      gen(i, next, maxDepth);
+    }
+  }
+  gen(0, [], 3);
+  return result.map(combo => combo.map(i => BR_GADGETS[i]));
+}
+
+// Cache combos (compute once)
+let BR_MODULE_COMBOS_3 = null;
+let BR_MODULE_COMBOS_2 = null;
+let BR_GADGET_COMBOS = null;
+
+function brGetModuleCombos(slots) {
+  if (slots === 3) {
+    if (!BR_MODULE_COMBOS_3) BR_MODULE_COMBOS_3 = brModuleCombos(3);
+    return BR_MODULE_COMBOS_3;
+  }
+  if (!BR_MODULE_COMBOS_2) BR_MODULE_COMBOS_2 = brModuleCombos(2);
+  return BR_MODULE_COMBOS_2;
+}
+
+function brGetGadgetCombos() {
+  if (!BR_GADGET_COMBOS) BR_GADGET_COMBOS = brGadgetCombos();
+  return BR_GADGET_COMBOS;
+}
+
+// Compute metrics for a single setup
+// Modules: multiplicative. Gadgets: additive on each attribute.
+function brEvaluateSetup(laser, modules, gadgets, rock) {
+  // POWER — multiplicative (laser base × each module's power multiplier)
+  // Gadgets don't affect mining laser power in our data
+  let powerMult = 1.0;
+  for (const m of modules) powerMult *= (m.power / 100);
+  const pLaser = laser.maxPower * powerMult;
+
+  // RESISTANCE — laser & modules multiplicative, gadgets additive
+  // Formula: R_eff = R_rock × (1 + laser.R/100) × product(1 + m.R/100) × (1 + sum(g.R)/100)
+  let rFactor = (1 + laser.R / 100);
+  for (const m of modules) rFactor *= (1 + m.R / 100);
+  let gadgetR = 0;
+  for (const g of gadgets) gadgetR += g.R;
+  rFactor *= (1 + gadgetR / 100);
+  
+  const rEff = Math.max(0, rock.R * rFactor);
+
+  // PBP — validated formula from Mort13 dataset
+  const pbp = BR_CM * rock.mass * (1 + rEff / 100);
+
+  // MARGIN
+  const margin = pLaser / pbp;
+  const canBreak = margin >= BR_SAFETY_MARGIN;
+
+  // GREENZONE FACTOR (OCWS) — modules multiplicative, gadgets additive
+  let gzFactor = (1 + laser.OCWS / 100);
+  for (const m of modules) gzFactor *= (1 + m.OCWS / 100);
+  let gadgetOCWS = 0;
+  for (const g of gadgets) gadgetOCWS += g.OCWS;
+  gzFactor *= (1 + gadgetOCWS / 100);
+
+  // LASER INSTABILITY FACTOR — modules multiplicative, gadgets additive
+  let liFactor = (1 + laser.LI / 100);
+  for (const m of modules) liFactor *= (1 + m.LI / 100);
+  let gadgetLI = 0;
+  for (const g of gadgets) gadgetLI += g.LI;
+  liFactor *= (1 + gadgetLI / 100);
+
+  return {
+    laser, modules, gadgets,
+    pLaser, pbp, margin, canBreak,
+    rEff, rFactor,
+    gzFactor, liFactor,
+  };
+}
+
+// Rate safety vs rock instability
+// For low-inst levels: either GZ or LI threshold met → SAFE
+// For high-inst levels: both required → SAFE; one → MARGINAL; none → RISKY
+function brRateSafety(setup, instLevel) {
+  const gzOK = setup.gzFactor >= instLevel.minGZ;
+  const liOK = setup.liFactor <= instLevel.minLI;
+  
+  // SAFE category (inst < 100): anything goes
+  if (instLevel.cls === "safe") {
+    return {rating:"safe", gzOK:true, liOK:true};
+  }
+  
+  // MANAGEABLE (inst 100-250): just ONE threshold met is enough
+  if (instLevel.cls === "manageable") {
+    if (gzOK || liOK) return {rating:"safe", gzOK, liOK};
+    return {rating:"marginal", gzOK, liOK};
+  }
+  
+  // CHALLENGING and above: both required for SAFE
+  if (gzOK && liOK) return {rating:"safe", gzOK, liOK};
+  if (gzOK || liOK) return {rating:"marginal", gzOK, liOK};
+  return {rating:"risky", gzOK, liOK};
+}
+
+// Generate human-readable "why" text for a setup
+function brExplainSetup(setup, rock, instLevel, safety) {
+  const parts = [];
+  
+  // Power
+  const marginPct = (setup.margin * 100 - 100).toFixed(0);
+  if (setup.margin >= 2.0) {
+    parts.push(`Heavy power surplus (${marginPct}% over needed)`);
+  } else if (setup.margin >= 1.5) {
+    parts.push(`Solid power margin (${marginPct}%)`);
+  } else {
+    parts.push(`Tight power margin (${marginPct}%) — precision required`);
+  }
+
+  // Resistance
+  if (setup.rFactor < 0.5) {
+    parts.push(`Resistance slashed to ${setup.rEff.toFixed(0)}% (was ${rock.R}%)`);
+  } else if (setup.rFactor < 0.8) {
+    parts.push(`Resistance reduced to ${setup.rEff.toFixed(0)}%`);
+  }
+
+  // Instability handling
+  if (rock.I >= 50) {
+    if (safety.rating === "safe") {
+      parts.push(`Stability handled: greenzone ${setup.gzFactor.toFixed(2)}×, laser jitter ${Math.round((1-setup.liFactor)*100)}% reduced`);
+    } else if (safety.rating === "marginal") {
+      if (safety.gzOK) parts.push(`Greenzone OK (${setup.gzFactor.toFixed(2)}×) but laser jitter control weak`);
+      else parts.push(`Jitter controlled (${Math.round((1-setup.liFactor)*100)}%) but greenzone too small for ${instLevel.label.toLowerCase()} inst`);
+    } else {
+      parts.push(`⚠ Low stability support for ${instLevel.label.toLowerCase()} instability`);
+    }
+  }
+
+  return parts.join(". ") + ".";
+}
+
+// Main compute function
+function computeAdvisor() {
+  const massEl = document.getElementById("brMass");
+  const resEl = document.getElementById("brRes");
+  const instEl = document.getElementById("brInst");
+  
+  const mass = parseFloat(massEl.value);
+  const R = parseFloat(resEl.value);
+  const I = parseFloat(instEl.value);
+
+  if (isNaN(mass) || mass <= 0) {
+    brShowError("Enter a valid rock mass");
+    return;
+  }
+  if (isNaN(R) || R < 0 || R > 100) {
+    brShowError("Resistance must be 0-100");
+    return;
+  }
+  if (isNaN(I) || I < 0) {
+    brShowError("Instability must be ≥ 0");
+    return;
+  }
+
+  const rock = {mass, R, I};
+  const instLevel = brInstLevel(I);
+
+  // ─────────────────────────────────────────────
+  // STEP 1: Try default loadouts first (no gadgets, no module changes)
+  // If any default achieves SAFE rating → show it and skip alternatives
+  // ─────────────────────────────────────────────
+  const defaultSetups = [];
+  for (const def of BR_DEFAULT_LOADOUTS) {
+    const laser = BR_LASERS.find(l => l.id === def.laserId);
+    const modules = def.moduleIds.map(id => BR_MODULES.find(m => m.id === id));
+    const setup = brEvaluateSetup(laser, modules, [], rock);
+    setup.isDefault = true;
+    setup.defaultLabel = def.label;
+    if (setup.canBreak) {
+      const safety = brRateSafety(setup, instLevel);
+      setup.safety = safety;
+      defaultSetups.push(setup);
+    }
+  }
+
+  // Find best default (prefer SAFE, then closest to sweet spot margin)
+  const safetyRank = {safe:0, marginal:1, risky:2};
+  defaultSetups.sort((a, b) => {
+    const sa = safetyRank[a.safety.rating] - safetyRank[b.safety.rating];
+    if (sa !== 0) return sa;
+    return Math.abs(a.margin - 1.5) - Math.abs(b.margin - 1.5);
+  });
+
+  const bestDefault = defaultSetups[0];
+  
+  // If best default is SAFE, we're done — just show it
+  if (bestDefault && bestDefault.safety.rating === "safe") {
+    brRenderDefaultOnly(rock, instLevel, bestDefault);
+    return;
+  }
+
+  // ─────────────────────────────────────────────
+  // STEP 2: Default didn't fully handle it — explore alternatives
+  // ─────────────────────────────────────────────
+  const allSetups = [];
+  const gadgetCombos = brGetGadgetCombos();
+
+  for (const laser of BR_LASERS) {
+    const moduleCombos = brGetModuleCombos(laser.slots);
+    for (const modules of moduleCombos) {
+      for (const gadgets of gadgetCombos) {
+        const setup = brEvaluateSetup(laser, modules, gadgets, rock);
+        if (!setup.canBreak) continue;
+        const safety = brRateSafety(setup, instLevel);
+        setup.safety = safety;
+        allSetups.push(setup);
+      }
+    }
+  }
+
+  if (allSetups.length === 0) {
+    brShowNoSolution(rock, instLevel);
+    return;
+  }
+
+  // Sort: safety rank (safe > marginal > risky), then closest margin to 1.5, then fewer items
+  allSetups.sort((a, b) => {
+    const sa = safetyRank[a.safety.rating] - safetyRank[b.safety.rating];
+    if (sa !== 0) return sa;
+    
+    // Prefer margin closest to 1.5 (sweet spot)
+    const da = Math.abs(a.margin - 1.5);
+    const db = Math.abs(b.margin - 1.5);
+    if (Math.abs(da - db) > 0.05) return da - db;
+    
+    // Prefer simpler setups (fewer modules/gadgets)
+    const ca = a.modules.length + a.gadgets.length;
+    const cb = b.modules.length + b.gadgets.length;
+    return ca - cb;
+  });
+
+  // Deduplicate near-identical (same laser + same module ids + same gadget ids)
+  const seen = new Set();
+  const unique = [];
+  for (const s of allSetups) {
+    const key = s.laser.id + "|" + 
+      s.modules.map(m=>m.id).sort().join(",") + "|" +
+      s.gadgets.map(g=>g.id).sort().join(",");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(s);
+    if (unique.length >= BR_TOP_N) break;
+  }
+
+  brRender(rock, instLevel, unique, bestDefault);
+}
+
+function brShowError(msg) {
+  const el = document.getElementById("brResults");
+  el.innerHTML = `<div class="advisor-empty fade-in"><div class="icon">⚠</div>${msg}</div>`;
+}
+
+function brShowNoSolution(rock, instLevel) {
+  const el = document.getElementById("brResults");
+  el.innerHTML = `
+    <div class="rock-summary fade-in">
+      <div class="rock-summary-row">
+        <span class="label">Mass</span><span class="value">${rock.mass}</span>
+      </div>
+      <div class="rock-summary-row">
+        <span class="label">Resistance</span><span class="value">${rock.R}%</span>
+      </div>
+      <div class="rock-summary-row">
+        <span class="label">Instability</span>
+        <span class="value"><span class="inst-badge inst-${instLevel.cls}">${instLevel.label}</span></span>
+      </div>
+    </div>
+    <div class="advisor-empty fade-in" style="margin-top:14px">
+      <div class="icon">✕</div>
+      No viable solo setup found.<br>
+      This rock likely requires MOLE multicrew (multiple lasers firing together)
+      or the mass/resistance exceeds what your fleet can break safely.
+    </div>
+  `;
+}
+
+// Render a single setup card (shared between default-only and alternatives view)
+function brRenderSetupCard(s, rock, instLevel, rankLabel, extraNote) {
+  const why = brExplainSetup(s, rock, instLevel, s.safety);
+  
+  // Modules chips
+  const modCounts = {};
+  s.modules.forEach(m => {
+    modCounts[m.id] = modCounts[m.id] || {count:0, mod:m};
+    modCounts[m.id].count++;
+  });
+  const modChips = Object.values(modCounts).map(({count, mod}) => {
+    const label = count > 1 ? `${count}× ${mod.name}` : mod.name;
+    const cls = mod.type === "active" ? "chip active" : "chip";
+    return `<span class="${cls}">${label}</span>`;
+  }).join("");
+  const modsLine = modChips || `<span style="color:var(--tx3);font-size:10px">none</span>`;
+
+  // Gadget chips
+  const gadCounts = {};
+  s.gadgets.forEach(g => {
+    gadCounts[g.id] = gadCounts[g.id] || {count:0, gad:g};
+    gadCounts[g.id].count++;
+  });
+  const gadChips = Object.values(gadCounts).map(({count, gad}) => {
+    const label = count > 1 ? `${count}× ${gad.name}` : gad.name;
+    return `<span class="chip gadget">${label}</span>`;
+  }).join("");
+  const gadsLine = gadChips || `<span style="color:var(--tx3);font-size:10px">—</span>`;
+
+  // Metric classes
+  const marginCls = s.margin >= 1.5 && s.margin <= 2.5 ? "good" :
+                    s.margin < 1.4 ? "warn" : "";
+  const gzCls = instLevel.minGZ > 1.0
+    ? (s.gzFactor >= instLevel.minGZ ? "good" : "warn")
+    : "";
+  const liCls = instLevel.minLI < 1.0
+    ? (s.liFactor <= instLevel.minLI ? "good" : "warn")
+    : "";
+
+  const safetyLabel = s.safety.rating.toUpperCase();
+  const laserName = s.isDefault ? s.defaultLabel : s.laser.name;
+  const noteHtml = extraNote ? `<div class="setup-why" style="background:rgba(74,222,128,.05);color:var(--green)"><strong>✓ ${extraNote}</strong></div>` : "";
+
+  return `
+    <div class="setup-card safety-${s.safety.rating} fade-in">
+      <div class="setup-header">
+        <div class="setup-rank"><span class="num">${rankLabel}</span> ${laserName}</div>
+        <div class="setup-safety ${s.safety.rating}">${safetyLabel}</div>
+      </div>
+      ${noteHtml}
+      <div class="setup-body">
+        <div class="setup-line">
+          <div class="k">Modules</div>
+          <div class="v">${modsLine}</div>
+        </div>
+        <div class="setup-line">
+          <div class="k">Gadgets</div>
+          <div class="v">${gadsLine}</div>
+        </div>
+      </div>
+      <div class="setup-metrics">
+        <div class="setup-metric">
+          <div class="mlabel">Power</div>
+          <div class="mvalue ${marginCls}">${s.margin.toFixed(2)}×</div>
+        </div>
+        <div class="setup-metric">
+          <div class="mlabel">Greenzone</div>
+          <div class="mvalue ${gzCls}">${s.gzFactor.toFixed(2)}×</div>
+        </div>
+        <div class="setup-metric">
+          <div class="mlabel">Jitter</div>
+          <div class="mvalue ${liCls}">${(s.liFactor*100).toFixed(0)}%</div>
+        </div>
+      </div>
+      <div class="setup-why">${why}</div>
+    </div>
+  `;
+}
+
+function brRenderRockSummary(rock, instLevel) {
+  return `
+    <div class="rock-summary fade-in">
+      <div class="rock-summary-row">
+        <span class="label">Mass</span>
+        <span class="value hl">${rock.mass}</span>
+      </div>
+      <div class="rock-summary-row">
+        <span class="label">Resistance</span>
+        <span class="value">${rock.R}%</span>
+      </div>
+      <div class="rock-summary-row">
+        <span class="label">Instability</span>
+        <span class="value"><span class="inst-badge inst-${instLevel.cls}">${rock.I} · ${instLevel.label}</span></span>
+      </div>
+    </div>
+  `;
+}
+
+const BR_DISCLAIMER = `
+  <div class="advisor-disclaimer">
+    <strong>▸ Note</strong> — Power calculations are precise (validated on Mort13's dataset, ~9% typical error). 
+    Stability recommendations (greenzone, jitter) are heuristic guidelines — always start with lower throttle 
+    and increase gradually when in doubt.
+  </div>
+`;
+
+// Happy path: default loadout handles the rock — no changes needed
+function brRenderDefaultOnly(rock, instLevel, bestDefault) {
+  const rockPart = brRenderRockSummary(rock, instLevel);
+  const goodNews = `
+    <div class="advisor-disclaimer fade-in" style="background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.3);margin-top:14px">
+      <strong style="color:var(--green)">✓ Default loadout handles this rock</strong> — 
+      no need to swap modules or throw gadgets. Use your ${bestDefault.defaultLabel.replace(' (default)','')} as-is.
+    </div>
+  `;
+  const card = brRenderSetupCard(bestDefault, rock, instLevel, "✓", "Your default setup works");
+  document.getElementById("brResults").innerHTML = rockPart + goodNews + card + BR_DISCLAIMER;
+}
+
+// Default didn't cut it — show alternatives (plus default for comparison if it can break)
+function brRender(rock, instLevel, setups, bestDefault) {
+  const rockPart = brRenderRockSummary(rock, instLevel);
+
+  let header = "";
+  if (bestDefault) {
+    // Default could break but wasn't fully safe
+    header = `
+      <div class="advisor-disclaimer fade-in" style="background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.3);margin-top:14px">
+        <strong style="color:var(--amber)">⚠ Default loadout is ${bestDefault.safety.rating.toUpperCase()}</strong> — 
+        ${bestDefault.defaultLabel.replace(' (default)','')} can break this rock (${bestDefault.margin.toFixed(2)}× power) 
+        but stability is not ideal for ${instLevel.label.toLowerCase()} instability. 
+        Consider swapping modules or throwing gadgets — recommendations below.
+      </div>
+    `;
+  } else {
+    // Default couldn't even break it
+    header = `
+      <div class="advisor-disclaimer fade-in" style="background:rgba(248,113,113,.06);border-color:rgba(248,113,113,.3);margin-top:14px">
+        <strong style="color:var(--red)">✕ Default loadout cannot break this rock</strong> — 
+        you'll need to swap modules. Best alternatives below.
+      </div>
+    `;
+  }
+
+  let cards = "";
+  setups.forEach((s, idx) => {
+    cards += brRenderSetupCard(s, rock, instLevel, `#${idx+1}`, null);
+  });
+
+  document.getElementById("brResults").innerHTML = rockPart + header + cards + BR_DISCLAIMER;
+}
+
+// Allow Enter key to trigger
+["brMass","brRes","brInst"].forEach(id => {
+  document.getElementById(id).addEventListener("keydown", e => {
+    if (e.key === "Enter") computeAdvisor();
+  });
+});
+
+// ═══════════════════════════════════════════════
 // TABS
 // ═══════════════════════════════════════════════
 function switchTab(tab) {
   document.getElementById("tab-scan").classList.toggle("active", tab === "scan");
   document.getElementById("tab-mass").classList.toggle("active", tab === "mass");
+  document.getElementById("tab-break").classList.toggle("active", tab === "break");
   document.getElementById("view-scan").style.display = tab === "scan" ? "" : "none";
   document.getElementById("view-mass").style.display = tab === "mass" ? "" : "none";
+  document.getElementById("view-break").style.display = tab === "break" ? "" : "none";
 }
 
 // ═══════════════════════════════════════════════
