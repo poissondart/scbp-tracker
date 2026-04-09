@@ -668,6 +668,72 @@ input{outline:none}
 .advisor-btn:active{transform:translateY(1px)}
 .advisor-btn:disabled{background:var(--dim);color:var(--tx3);cursor:not-allowed;box-shadow:none}
 
+.ore-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+}
+.ore-btn{
+  background:var(--bg3);
+  border:1px solid var(--line);
+  color:var(--tx2);
+  padding:8px 6px;
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:500;
+  cursor:pointer;
+  text-align:left;
+  transition:all .12s;
+  line-height:1.35;
+  position:relative;
+  overflow:hidden;
+}
+.ore-btn:hover{
+  background:var(--bg2);
+  border-color:var(--amber-dim);
+  color:var(--tx);
+}
+.ore-btn:active{transform:translateY(1px)}
+.ore-btn.last-loaded{
+  border-color:var(--amber);
+  background:rgba(251,191,36,.08);
+  color:var(--amber);
+}
+.ore-btn .ore-name{
+  display:block;
+  font-weight:700;
+  font-size:11px;
+  margin-bottom:2px;
+  color:inherit;
+}
+.ore-btn .ore-meta{
+  display:block;
+  font-size:8px;
+  color:var(--tx3);
+  letter-spacing:.5px;
+  font-variant-numeric:tabular-nums;
+}
+.ore-btn.last-loaded .ore-meta{color:var(--amber-dim)}
+
+/* Rarity dot on ore button */
+.ore-btn .rdot{
+  position:absolute;
+  top:6px;
+  right:6px;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+}
+.ore-btn.r-leg .rdot{background:var(--r-leg)}
+.ore-btn.r-epic .rdot{background:var(--r-epic)}
+.ore-btn.r-rare .rdot{background:var(--r-rare)}
+.ore-btn.r-unc .rdot{background:var(--r-unc)}
+.ore-btn.r-com .rdot{background:var(--r-com)}
+
+@media(max-width:420px){
+  .ore-grid{grid-template-columns:repeat(2,1fr)}
+}
+
 .rock-summary{
   background:var(--bg3);
   border:1px solid var(--line);
@@ -999,6 +1065,20 @@ input{outline:none}
 
     <button class="advisor-btn" id="brBtn" onclick="computeAdvisor()">◊ ANALYZE ROCK</button>
 
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title">▸ Ore Quick Fill</div>
+    <div class="panel-meta">TAP TO LOAD</div>
+  </div>
+  <div class="panel-body">
+    <div style="font-size:10px;color:var(--tx3);line-height:1.5;margin-bottom:10px">
+      Tap an ore to auto-fill resistance &amp; instability. If mass is set, instability is scaled to match.
+      If mass is empty, defaults to Medium (8000).
+    </div>
+    <div class="ore-grid" id="oreGrid"></div>
   </div>
 </div>
 
@@ -1499,12 +1579,168 @@ const BR_DEFAULT_LOADOUTS = [
   {laserId:"hofstede2", moduleIds:["focus3","torrent3"],            label:"Hofstede #2 (default)"},
 ];
 
+// Ore reference data — resistance is constant, instability scales with mass
+// Size reference points: Small=3000, Medium=8000, Large=15000, Huge=25000
+// Rarity tiers used for UI coloring (based on resistance + value typical pattern)
+// {name, R (%), smallI, mediumI, largeI, hugeI, rarity}
+const BR_ORES = [
+  {name:"Ice",             R:0,   small:0,    medium:0,    large:0,    huge:0,    rarity:"com"},
+  {name:"Aluminum",        R:2,   small:1,    medium:3,    large:5,    huge:9,    rarity:"com"},
+  {name:"Copper",          R:0,   small:3,    medium:8,    large:15,   huge:25,   rarity:"com"},
+  {name:"Iron",            R:0,   small:4,    medium:10,   large:19,   huge:31,   rarity:"com"},
+  {name:"Silicon",         R:0,   small:19,   medium:51,   large:96,   huge:159,  rarity:"com"},
+  {name:"Tin",             R:0,   small:1,    medium:1,    large:3,    huge:4,    rarity:"com"},
+  {name:"Corundum",        R:10,  small:7,    medium:18,   large:34,   huge:56,   rarity:"com"},
+  {name:"Quartz",          R:0,   small:15,   medium:41,   large:76,   huge:127,  rarity:"com"},
+  {name:"Hephaestanite",   R:0,   small:68,   medium:183,  large:342,  huge:571,  rarity:"com"},
+  {name:"Tungsten",        R:8,   small:1,    medium:3,    large:6,    huge:11,   rarity:"unc"},
+  {name:"Titanium",        R:25,  small:7,    medium:17,   large:33,   huge:54,   rarity:"unc"},
+  {name:"Torite",          R:28,  small:115,  medium:307,  large:575,  huge:959,  rarity:"unc"},
+  {name:"Borase",          R:43,  small:10,   medium:28,   large:52,   huge:87,   rarity:"unc"},
+  {name:"Laranite",        R:45,  small:17,   medium:46,   large:86,   huge:143,  rarity:"unc"},
+  {name:"Agricium",        R:55,  small:30,   medium:81,   large:151,  huge:252,  rarity:"rare"},
+  {name:"Aslarite",        R:55,  small:136,  medium:364,  large:682,  huge:1136, rarity:"rare"},
+  {name:"Gold",            R:57,  small:16,   medium:42,   large:79,   huge:132,  rarity:"rare"},
+  {name:"Bexalite",        R:64,  small:44,   medium:119,  large:222,  huge:371,  rarity:"rare"},
+  {name:"Stileron",        R:64,  small:94,   medium:251,  large:471,  huge:784,  rarity:"rare"},
+  {name:"Ouratite",        R:64,  small:194,  medium:517,  large:970,  huge:1617, rarity:"rare"},
+  {name:"Taranite",        R:53,  small:40,   medium:107,  large:201,  huge:335,  rarity:"epic"},
+  {name:"Beryl",           R:67,  small:75,   medium:199,  large:374,  huge:623,  rarity:"epic"},
+  {name:"Caranite (Pure)", R:50,  small:176,  medium:469,  large:878,  huge:1464, rarity:"epic"},
+  {name:"Lindinium",       R:79,  small:45,   medium:121,  large:227,  huge:379,  rarity:"epic"},
+  {name:"Riccite",         R:89,  small:180,  medium:480,  large:899,  huge:1499, rarity:"leg"},
+  {name:"Savrilium",       R:89,  small:31,   medium:83,   large:156,  huge:259,  rarity:"leg"},
+  {name:"Quantainium",     R:90,  small:29,   medium:78,   large:147,  huge:244,  rarity:"leg"},
+];
+
+// Size reference points for ore instability interpolation
+const BR_ORE_SIZES = [
+  {mass:3000,  key:"small"},
+  {mass:8000,  key:"medium"},
+  {mass:15000, key:"large"},
+  {mass:25000, key:"huge"},
+];
+
+// Get instability for an ore at a given mass (linear interpolation between sizes)
+function brOreInstability(ore, mass) {
+  const pts = BR_ORE_SIZES;
+  
+  // Below or at smallest point
+  if (mass <= pts[0].mass) return ore[pts[0].key];
+  
+  // Above or at largest point — extrapolate linearly from last segment
+  if (mass >= pts[pts.length-1].mass) {
+    const a = pts[pts.length-2];
+    const b = pts[pts.length-1];
+    const va = ore[a.key];
+    const vb = ore[b.key];
+    if (mass === b.mass) return vb;
+    const slope = (vb - va) / (b.mass - a.mass);
+    return Math.max(0, Math.round(vb + slope * (mass - b.mass)));
+  }
+  
+  // Find surrounding points and interpolate
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i];
+    const b = pts[i+1];
+    if (mass >= a.mass && mass <= b.mass) {
+      const va = ore[a.key];
+      const vb = ore[b.key];
+      const t = (mass - a.mass) / (b.mass - a.mass);
+      return Math.round(va + (vb - va) * t);
+    }
+  }
+  return ore.medium;
+}
+
+// Render the ore quick-fill grid
+function brRenderOreGrid() {
+  const grid = document.getElementById("oreGrid");
+  if (!grid) return;
+  grid.innerHTML = BR_ORES.map((ore, i) => `
+    <button type="button" class="ore-btn r-${ore.rarity}" data-ore-idx="${i}" onclick="brLoadOre(${i})">
+      <span class="rdot"></span>
+      <span class="ore-name">${ore.name}</span>
+      <span class="ore-meta">R ${ore.R}% · I ${ore.small}-${ore.huge}</span>
+    </button>
+  `).join("");
+}
+
+// Track which ore was last loaded — used to auto-recompute instability on mass change
+let BR_LAST_ORE_IDX = null;
+
+// Fill inputs from an ore
+function brLoadOre(idx) {
+  const ore = BR_ORES[idx];
+  if (!ore) return;
+  
+  const massEl = document.getElementById("brMass");
+  const resEl = document.getElementById("brRes");
+  const instEl = document.getElementById("brInst");
+  
+  // Parse current mass (if any)
+  const currentMass = parseFloat(massEl.value);
+  
+  // Determine mass to use
+  let massToUse;
+  if (!isNaN(currentMass) && currentMass > 0) {
+    // User already entered mass — keep it, just compute instability for this mass
+    massToUse = currentMass;
+  } else {
+    // No mass — default to Medium (8000) for this ore
+    massToUse = 8000;
+    massEl.value = "8000";
+  }
+  
+  // Fill resistance and scaled instability
+  resEl.value = ore.R;
+  instEl.value = brOreInstability(ore, massToUse);
+  
+  // Remember this ore for mass-driven auto-recompute
+  BR_LAST_ORE_IDX = idx;
+  
+  // Visual feedback: highlight the last-loaded ore
+  document.querySelectorAll(".ore-btn").forEach(b => b.classList.remove("last-loaded"));
+  const btn = document.querySelector(`.ore-btn[data-ore-idx="${idx}"]`);
+  if (btn) btn.classList.add("last-loaded");
+  
+  // Auto-compute
+  computeAdvisor();
+}
+
+// When mass changes, if an ore was last loaded, recompute instability from it
+function brOnMassInput() {
+  if (BR_LAST_ORE_IDX === null) return;
+  const ore = BR_ORES[BR_LAST_ORE_IDX];
+  if (!ore) return;
+  const massEl = document.getElementById("brMass");
+  const mass = parseFloat(massEl.value);
+  if (isNaN(mass) || mass <= 0) return;
+  
+  // Rescale instability and refresh resistance (in case user cleared it)
+  const instEl = document.getElementById("brInst");
+  const resEl = document.getElementById("brRes");
+  instEl.value = brOreInstability(ore, mass);
+  if (!resEl.value) resEl.value = ore.R;
+  
+  // Auto re-run analysis with updated values
+  computeAdvisor();
+}
+
+// When user manually edits resistance or instability, clear the ore lock
+// so mass changes don't overwrite their input
+function brOnManualRIEdit() {
+  BR_LAST_ORE_IDX = null;
+  document.querySelectorAll(".ore-btn.last-loaded").forEach(b => b.classList.remove("last-loaded"));
+}
+
 // Constants
 const BR_CM = 0.19;                 // Power breakpoint coefficient (Mort13 dataset)
 const BR_SAFETY_MARGIN = 1.20;      // Require 20% power surplus
 const BR_TOP_N = 5;                 // Show top 5 setups
 
 // Instability thresholds (heuristic, tuned so typical default loadouts reach SAFE for common rocks)
+// Extended to cover Huge rocks with 1500+ instability
 // [maxInst, label, cssClass, minGZ, minLI]
 // minLI is the MAX acceptable laser instability factor (lower = better control)
 const BR_INST_LEVELS = [
@@ -1512,7 +1748,9 @@ const BR_INST_LEVELS = [
   {max:250,    label:"MANAGEABLE",  cls:"manageable",  minGZ:1.2, minLI:1.0},
   {max:400,    label:"CHALLENGING", cls:"challenging", minGZ:1.4, minLI:0.95},
   {max:600,    label:"PROBLEMATIC", cls:"problematic", minGZ:1.7, minLI:0.8},
-  {max:Infinity,label:"EXTREME",    cls:"extreme",     minGZ:2.0, minLI:0.7},
+  {max:900,    label:"SEVERE",      cls:"problematic", minGZ:2.0, minLI:0.7},
+  {max:1500,   label:"CRITICAL",    cls:"extreme",     minGZ:2.3, minLI:0.55},
+  {max:Infinity,label:"EXTREME",    cls:"extreme",     minGZ:2.6, minLI:0.45},
 ];
 
 function brInstLevel(inst) {
@@ -1706,46 +1944,76 @@ function computeAdvisor() {
 
   const rock = {mass, R, I};
   const instLevel = brInstLevel(I);
+  const safetyRank = {safe:0, marginal:1, risky:2};
 
-  // ─────────────────────────────────────────────
-  // STEP 1: Try default loadouts first (no gadgets, no module changes)
-  // If any default achieves SAFE rating → show it and skip alternatives
-  // ─────────────────────────────────────────────
-  const defaultSetups = [];
-  for (const def of BR_DEFAULT_LOADOUTS) {
+  // Helper: evaluate a default loadout with a given gadget combo
+  const evalDefault = (def, gadgets) => {
     const laser = BR_LASERS.find(l => l.id === def.laserId);
     const modules = def.moduleIds.map(id => BR_MODULES.find(m => m.id === id));
-    const setup = brEvaluateSetup(laser, modules, [], rock);
+    const setup = brEvaluateSetup(laser, modules, gadgets, rock);
+    if (!setup.canBreak) return null;
     setup.isDefault = true;
     setup.defaultLabel = def.label;
-    if (setup.canBreak) {
-      const safety = brRateSafety(setup, instLevel);
-      setup.safety = safety;
-      defaultSetups.push(setup);
-    }
-  }
+    setup.safety = brRateSafety(setup, instLevel);
+    return setup;
+  };
 
-  // Find best default (prefer SAFE, then closest to sweet spot margin)
-  const safetyRank = {safe:0, marginal:1, risky:2};
-  defaultSetups.sort((a, b) => {
+  // ─────────────────────────────────────────────
+  // STEP 1: Try default loadouts WITHOUT gadgets
+  // If any default achieves SAFE → show it, done
+  // ─────────────────────────────────────────────
+  const step1Setups = [];
+  for (const def of BR_DEFAULT_LOADOUTS) {
+    const setup = evalDefault(def, []);
+    if (setup) step1Setups.push(setup);
+  }
+  step1Setups.sort((a, b) => {
     const sa = safetyRank[a.safety.rating] - safetyRank[b.safety.rating];
     if (sa !== 0) return sa;
     return Math.abs(a.margin - 1.5) - Math.abs(b.margin - 1.5);
   });
+  const step1Best = step1Setups[0];
 
-  const bestDefault = defaultSetups[0];
-  
-  // If best default is SAFE, we're done — just show it
-  if (bestDefault && bestDefault.safety.rating === "safe") {
-    brRenderDefaultOnly(rock, instLevel, bestDefault);
+  if (step1Best && step1Best.safety.rating === "safe") {
+    brRenderDefaultOnly(rock, instLevel, step1Best);
     return;
   }
 
   // ─────────────────────────────────────────────
-  // STEP 2: Default didn't fully handle it — explore alternatives
+  // STEP 2: Try default loadouts WITH gadgets (0-3)
+  // If any becomes SAFE → recommend "just throw these gadgets"
+  // ─────────────────────────────────────────────
+  const gadgetCombos = brGetGadgetCombos();
+  const step2Setups = [];
+  for (const def of BR_DEFAULT_LOADOUTS) {
+    for (const gadgets of gadgetCombos) {
+      if (gadgets.length === 0) continue; // skip empty (already tried in step 1)
+      const setup = evalDefault(def, gadgets);
+      if (setup) step2Setups.push(setup);
+    }
+  }
+  step2Setups.sort((a, b) => {
+    const sa = safetyRank[a.safety.rating] - safetyRank[b.safety.rating];
+    if (sa !== 0) return sa;
+    // Prefer fewer gadgets (less inventory use)
+    const ga = a.gadgets.length;
+    const gb = b.gadgets.length;
+    if (ga !== gb) return ga - gb;
+    return Math.abs(a.margin - 1.5) - Math.abs(b.margin - 1.5);
+  });
+
+  // Find first SAFE from step 2 with minimum gadgets
+  const step2Safe = step2Setups.find(s => s.safety.rating === "safe");
+  if (step2Safe) {
+    brRenderDefaultPlusGadgets(rock, instLevel, step1Best, step2Safe);
+    return;
+  }
+
+  // ─────────────────────────────────────────────
+  // STEP 3: Default+gadgets not enough — full search of module swaps
+  // Show alternatives with module changes
   // ─────────────────────────────────────────────
   const allSetups = [];
-  const gadgetCombos = brGetGadgetCombos();
 
   for (const laser of BR_LASERS) {
     const moduleCombos = brGetModuleCombos(laser.slots);
@@ -1765,27 +2033,25 @@ function computeAdvisor() {
     return;
   }
 
-  // Sort: safety rank (safe > marginal > risky), then closest margin to 1.5, then fewer items
+  // Sort: safety rank, then closest margin to 1.5, then simpler setups
   allSetups.sort((a, b) => {
     const sa = safetyRank[a.safety.rating] - safetyRank[b.safety.rating];
     if (sa !== 0) return sa;
-    
-    // Prefer margin closest to 1.5 (sweet spot)
+
     const da = Math.abs(a.margin - 1.5);
     const db = Math.abs(b.margin - 1.5);
     if (Math.abs(da - db) > 0.05) return da - db;
-    
-    // Prefer simpler setups (fewer modules/gadgets)
+
     const ca = a.modules.length + a.gadgets.length;
     const cb = b.modules.length + b.gadgets.length;
     return ca - cb;
   });
 
-  // Deduplicate near-identical (same laser + same module ids + same gadget ids)
+  // Deduplicate near-identical setups
   const seen = new Set();
   const unique = [];
   for (const s of allSetups) {
-    const key = s.laser.id + "|" + 
+    const key = s.laser.id + "|" +
       s.modules.map(m=>m.id).sort().join(",") + "|" +
       s.gadgets.map(g=>g.id).sort().join(",");
     if (seen.has(key)) continue;
@@ -1794,7 +2060,9 @@ function computeAdvisor() {
     if (unique.length >= BR_TOP_N) break;
   }
 
-  brRender(rock, instLevel, unique, bestDefault);
+  // Find best step2 (default+gadgets) as fallback reference for header
+  const step2BestRef = step2Setups[0] || null;
+  brRender(rock, instLevel, unique, step1Best, step2BestRef);
 }
 
 function brShowError(msg) {
@@ -1945,23 +2213,56 @@ function brRenderDefaultOnly(rock, instLevel, bestDefault) {
   document.getElementById("brResults").innerHTML = rockPart + goodNews + card + BR_DISCLAIMER;
 }
 
+// Middle path: default loadout + gadgets achieves SAFE — recommend "just throw these gadgets"
+function brRenderDefaultPlusGadgets(rock, instLevel, step1Best, step2Safe) {
+  const rockPart = brRenderRockSummary(rock, instLevel);
+  
+  // Describe the gadget additions
+  const gadCounts = {};
+  step2Safe.gadgets.forEach(g => {
+    gadCounts[g.id] = gadCounts[g.id] || {count:0, gad:g};
+    gadCounts[g.id].count++;
+  });
+  const gadList = Object.values(gadCounts).map(({count, gad}) => {
+    return count > 1 ? `${count}× ${gad.name}` : gad.name;
+  }).join(" + ");
+  
+  const step1Info = step1Best 
+    ? `Your default is ${step1Best.safety.rating.toUpperCase()} bare (${step1Best.margin.toFixed(2)}× power, greenzone ${step1Best.gzFactor.toFixed(2)}×)`
+    : `Your default can't break it bare`;
+  
+  const goodNews = `
+    <div class="advisor-disclaimer fade-in" style="background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.3);margin-top:14px">
+      <strong style="color:var(--green)">✓ Just throw gadgets — no module swap needed</strong><br>
+      ${step1Info}. Adding <strong style="color:var(--blue)">${gadList}</strong> makes it SAFE. 
+      Keep your modules as-is.
+    </div>
+  `;
+  const card = brRenderSetupCard(step2Safe, rock, instLevel, "✓", `${gadList} → SAFE`);
+  document.getElementById("brResults").innerHTML = rockPart + goodNews + card + BR_DISCLAIMER;
+}
+
 // Default didn't cut it — show alternatives (plus default for comparison if it can break)
-function brRender(rock, instLevel, setups, bestDefault) {
+function brRender(rock, instLevel, setups, step1Best, step2Best) {
   const rockPart = brRenderRockSummary(rock, instLevel);
 
   let header = "";
-  if (bestDefault) {
-    // Default could break but wasn't fully safe
+  if (step1Best) {
+    // Default bare could break but wasn't safe
+    // Note: if step2Best exists but wasn't safe, that means even default+gadgets is marginal
+    const extraInfo = step2Best && step2Best !== step1Best
+      ? ` Even with gadgets, default stays ${step2Best.safety.rating}.`
+      : "";
     header = `
       <div class="advisor-disclaimer fade-in" style="background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.3);margin-top:14px">
-        <strong style="color:var(--amber)">⚠ Default loadout is ${bestDefault.safety.rating.toUpperCase()}</strong> — 
-        ${bestDefault.defaultLabel.replace(' (default)','')} can break this rock (${bestDefault.margin.toFixed(2)}× power) 
-        but stability is not ideal for ${instLevel.label.toLowerCase()} instability. 
-        Consider swapping modules or throwing gadgets — recommendations below.
+        <strong style="color:var(--amber)">⚠ Default loadout is ${step1Best.safety.rating.toUpperCase()}</strong> — 
+        ${step1Best.defaultLabel.replace(' (default)','')} can break this rock (${step1Best.margin.toFixed(2)}× power) 
+        but stability is not ideal for ${instLevel.label.toLowerCase()} instability.${extraInfo} 
+        Consider swapping modules — alternatives below.
       </div>
     `;
   } else {
-    // Default couldn't even break it
+    // Default couldn't even break it bare
     header = `
       <div class="advisor-disclaimer fade-in" style="background:rgba(248,113,113,.06);border-color:rgba(248,113,113,.3);margin-top:14px">
         <strong style="color:var(--red)">✕ Default loadout cannot break this rock</strong> — 
@@ -2003,6 +2304,14 @@ function switchTab(tab) {
 document.getElementById("scanInput").addEventListener("input", renderResults);
 document.getElementById("massRock").addEventListener("input", calcMass);
 document.getElementById("massPct").addEventListener("input", calcMass);
+
+// Break advisor: mass change auto-rescales instability if an ore is active
+document.getElementById("brMass").addEventListener("input", brOnMassInput);
+// Manual edit of R or I "unlocks" from the ore (user overrides our data)
+document.getElementById("brRes").addEventListener("input", brOnManualRIEdit);
+document.getElementById("brInst").addEventListener("input", brOnManualRIEdit);
+
+brRenderOreGrid();
 renderResults();
 </script>
 </body>
