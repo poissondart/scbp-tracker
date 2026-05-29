@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rodokmeň — rod Sokolovovcov</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2b211a;
+    --ink-soft:#5c4d40;
+    --paper:#f4ecdc;
+    --line:#b08a52;
+    --line-strong:#8a6a3a;
+    --burgundy:#6e1f23;
+    --burgundy-soft:#8a3034;
+    --gold:#9a7327;
+    --card:#fbf6ea;
+    --card-edge:#d8c39c;
+    --green:#3f5b3a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:#211d19;}
+  body{
+    font-family:"PT Serif",Georgia,serif;color:var(--ink);
+    -webkit-font-smoothing:antialiased;padding:34px 0 60px;
+  }
+
+  .wrap{width:max-content;max-width:none;min-width:100%;margin:0 auto;padding:0 30px;}
+
+  /* ---------- header ---------- */
+  header{text-align:center;margin-bottom:8px;}
+  .cross{font-size:24px;color:var(--burgundy);line-height:1;margin-bottom:8px;}
+  .eyebrow{letter-spacing:.3em;text-transform:uppercase;font-size:11px;color:var(--gold);margin-bottom:10px;}
+  h1{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:clamp(40px,6vw,62px);line-height:.96;color:var(--paper);}
+  h1 .accent{color:#d98a5b;font-style:italic;font-weight:500;}
+  .subtitle{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:clamp(16px,2.4vw,21px);color:#c9b48f;margin-top:10px;}
+  .rule{display:flex;align-items:center;justify-content:center;gap:12px;margin:18px auto 0;max-width:460px;}
+  .rule .ln{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);flex:1;}
+  .rule .dot{width:7px;height:7px;background:var(--burgundy);transform:rotate(45deg);}
+
+  /* ---------- section panel (parchment) ---------- */
+  .panel{
+    background:
+      radial-gradient(circle at 12% 8%, rgba(154,115,39,.06), transparent 40%),
+      radial-gradient(circle at 90% 92%, rgba(110,31,35,.05), transparent 45%),
+      var(--paper);
+    border:1px solid #3a342c;
+    box-shadow:0 18px 46px rgba(0,0,0,.45);
+    border-radius:3px;
+    padding:30px 26px 38px;
+    margin-top:30px;
+    position:relative;
+    width:100%;
+  }
+  .panel::before{content:"";position:absolute;inset:9px;border:1px solid var(--card-edge);pointer-events:none;border-radius:2px;}
+  .sec-head{text-align:center;margin-bottom:22px;position:relative;z-index:1;}
+  .sec-kicker{letter-spacing:.26em;text-transform:uppercase;font-size:10px;color:var(--gold);}
+  .sec-title{font-family:"Cormorant Garamond",serif;font-size:30px;color:var(--burgundy);font-weight:600;line-height:1.05;margin-top:3px;}
+  .sec-desc{font-size:12.5px;color:var(--ink-soft);font-style:italic;margin-top:6px;max-width:640px;margin-left:auto;margin-right:auto;line-height:1.5;}
+
+  /* two ancestral trees side by side */
+  .ancestors{display:flex;gap:40px;justify-content:center;flex-wrap:nowrap;position:relative;z-index:1;}
+  .fam-col{flex:0 0 auto;}
+  .fam-banner{
+    text-align:center;font-family:"Cormorant Garamond",serif;font-style:italic;
+    font-size:19px;color:var(--burgundy-soft);margin-bottom:6px;
+    border-bottom:1px solid var(--card-edge);padding-bottom:6px;
+  }
+
+  /* ---------- TREE (nested list connectors) ---------- */
+  .tree{overflow:visible;padding:4px 2px 8px;}
+  .tree ul{
+    display:flex;justify-content:center;position:relative;padding-top:26px;list-style:none;
+  }
+  .tree li{
+    list-style:none;position:relative;padding:26px 10px 0;
+    display:flex;flex-direction:column;align-items:center;
+  }
+  /* connectors from each child up to the horizontal bar */
+  .tree li::before,.tree li::after{
+    content:"";position:absolute;top:0;width:50%;height:26px;border-top:2px solid var(--line);
+  }
+  .tree li::before{right:50%;border-right:2px solid var(--line);}
+  .tree li::after{left:50%;}
+  .tree li:only-child::before,.tree li:only-child::after{display:none;}
+  .tree li:first-child::before{border:0;}
+  .tree li:last-child::after{border:0;}
+  .tree li:first-child::after{border-left:2px solid var(--line);}
+  /* vertical drop from a parent node into its children */
+  .tree ul ul::before{
+    content:"";position:absolute;top:0;left:50%;width:0;height:26px;border-left:2px solid var(--line);
+  }
+  .tree > ul{padding-top:0;}
+  .tree > ul > li{padding-top:0;}
+  .tree > ul > li::before,.tree > ul > li::after{display:none;}
+
+  /* ---------- node cards ---------- */
+  .node{display:flex;align-items:stretch;}
+  .card{
+    background:var(--card);border:1px solid var(--card-edge);border-top:3px solid var(--line-strong);
+    padding:9px 13px 10px;width:200px;text-align:left;position:relative;
+    transition:transform .15s ease, box-shadow .15s ease;
+    box-shadow:0 1px 0 rgba(184,154,110,.25);
+  }
+  .card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(110,31,35,.16);z-index:5;}
+  .card .role{font-style:italic;font-size:10px;color:var(--gold);letter-spacing:.03em;margin-bottom:2px;}
+  .card .name{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:18px;line-height:1.05;color:var(--ink);}
+  .card .name .pat{font-weight:400;color:var(--ink-soft);font-size:15px;}
+  .card .dates{font-size:10.5px;color:var(--ink-soft);margin-top:3px;letter-spacing:.02em;}
+  .card .place{font-size:9.5px;color:var(--ink-soft);font-style:italic;margin-top:3px;line-height:1.3;}
+
+  .card.small{width:158px;padding:7px 10px 8px;}
+  .card.small .name{font-size:15px;}
+  .card.small .name .pat{font-size:12px;}
+  .card.small .role{font-size:9px;}
+  .card.small .dates{font-size:9.5px;}
+
+  .card.lead{border-top-color:var(--burgundy);background:linear-gradient(180deg,#fff8ec,#f6ebd6);}
+  .card.lead .role{color:var(--burgundy);}
+  .card.focal{border:2px solid var(--burgundy);border-top:4px solid var(--burgundy);width:215px;background:linear-gradient(180deg,#fff7ea,#f5e9d2);box-shadow:0 6px 18px rgba(110,31,35,.18);}
+  .card.dim{opacity:.92;}
+  .tag{
+    position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+    background:var(--burgundy);color:var(--paper);font-size:7.5px;letter-spacing:.18em;
+    text-transform:uppercase;padding:2px 8px;white-space:nowrap;border-radius:1px;
+  }
+  .tag.gold{background:var(--gold);}
+  .tag.green{background:var(--green);}
+
+  /* couple node */
+  .couple .card{border-radius:0;}
+  .couple .mar{display:flex;flex-direction:column;align-items:center;justify-content:center;width:30px;color:var(--burgundy);}
+  .couple .mar .ring{font-size:15px;}
+  .couple .mar .yr{font-size:8px;color:var(--ink-soft);}
+  .couple .mar .bar{width:100%;height:2px;background:var(--line);}
+
+  /* marriage junction banner between sections */
+  .junction{
+    display:flex;flex-direction:column;align-items:center;margin:30px auto 0;position:relative;z-index:1;
+  }
+  .junction .arrows{font-size:13px;color:var(--line);letter-spacing:.4em;margin-bottom:6px;}
+  .marriage-banner{
+    display:inline-flex;align-items:center;gap:16px;background:#fff8ec;
+    border:2px solid var(--burgundy);padding:12px 22px;border-radius:3px;
+    box-shadow:0 8px 22px rgba(110,31,35,.18);
+  }
+  .marriage-banner .ring{font-size:24px;color:var(--burgundy);}
+  .marriage-banner .who{font-family:"Cormorant Garamond",serif;font-size:21px;color:var(--ink);font-weight:600;}
+  .marriage-banner .who small{display:block;font-size:11px;color:var(--ink-soft);font-style:italic;font-family:"PT Serif",serif;font-weight:400;}
+  .marriage-banner .meta{font-size:10px;color:var(--burgundy-soft);letter-spacing:.1em;text-transform:uppercase;}
+
+  /* continuation to present */
+  .continuation{text-align:center;margin-top:8px;position:relative;z-index:1;}
+  .dots{color:var(--line);letter-spacing:.55em;font-size:16px;}
+  .cont-card{display:inline-block;margin-top:8px;border:1.5px dashed var(--burgundy-soft);background:rgba(110,31,35,.05);padding:11px 26px;border-radius:3px;}
+  .cont-card .t{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:18px;color:var(--burgundy);}
+  .cont-card .s{font-size:10.5px;color:var(--ink-soft);margin-top:2px;}
+
+  /* legend + source */
+  .footnote{margin-top:30px;text-align:center;}
+  .legend{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;font-size:11px;color:#c9b48f;margin-bottom:14px;}
+  .legend span{display:flex;align-items:center;gap:7px;}
+  .sw{width:20px;height:12px;border:1px solid var(--card-edge);background:var(--card);}
+  .sw.focal{border:2px solid var(--burgundy);}
+  .sw.lead{border-top:3px solid var(--burgundy);}
+  .sw.norm{border-top:3px solid var(--line-strong);}
+  .src{font-size:11px;color:#a99877;font-style:italic;line-height:1.6;max-width:840px;margin:0 auto;}
+  .src a{color:#d98a5b;}
+
+  .hint{text-align:center;font-size:11px;color:#9c8b6a;font-style:italic;margin-top:6px;}
+
+  @media print{ body{background:#fff;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="cross">☦</div>
+    <div class="eyebrow">Rodokmeň · Тобольская и Омская епархия</div>
+    <h1>Rod <span class="accent">Соколовых</span></h1>
+    <div class="subtitle">Päť pokolení sibírskeho pravoslávneho duchovenstva</div>
+    <div class="rule"><span class="ln"></span><span class="dot"></span><span class="ln"></span></div>
+  </header>
+
+  <!-- ===================== ANCESTORS ===================== -->
+  <section class="panel">
+    <div class="sec-head">
+      <div class="sec-kicker">Časť I</div>
+      <div class="sec-title">Predkovia &amp; obe vetvy rodu</div>
+      <div class="sec-desc">Tvoj prapradedo Александр vzišiel z rodu Sokolovovcov; jeho manželka Мария z rodu Peršukovovcov. Sobášom 1883 sa obe línie spojili.</div>
+    </div>
+
+    <div class="ancestors">
+      <!-- SOKOLOV ancestral tree -->
+      <div class="fam-col">
+        <div class="fam-banner">Rod Соколовых</div>
+        <div class="tree">
+          <ul>
+            <li>
+              <div class="node">
+                <div class="card small">
+                  <div class="role">dьячok · žalmista</div>
+                  <div class="name">Алексей <span class="pat">Соколов (?)</span></div>
+                  <div class="dates">zač. 19. stor.</div>
+                  <div class="place">doložený len ako „otec — dьячok"</div>
+                </div>
+              </div>
+              <ul>
+                <li>
+                  <div class="node couple">
+                    <div class="card">
+                      <div class="role">священник · kňaz</div>
+                      <div class="name">Иван <span class="pat">Алексеевич</span></div>
+                      <div class="dates">ok. 1834 — po 1875</div>
+                      <div class="place">Kalužská gub.(?) · vysv. 1857 · Tobolská eparchia</div>
+                    </div>
+                    <div class="mar"><div class="bar"></div><div class="ring">∞</div><div class="bar"></div></div>
+                    <div class="card">
+                      <div class="role">manželka</div>
+                      <div class="name">Мария <span class="pat">Алексеевна</span></div>
+                      <div class="dates">ok. 1840 — po 1875</div>
+                    </div>
+                  </div>
+                  <ul>
+                    <li><div class="node"><div class="card small dim"><div class="role">dcéra</div><div class="name">Анна</div><div class="dates">ok. 1862</div></div></div></li>
+                    <li>
+                      <div class="node">
+                        <div class="card small focal">
+                          <span class="tag">prapradedo</span>
+                          <div class="role">псаломщик</div>
+                          <div class="name">Александр</div>
+                          <div class="dates">ok. 1864 — 1943</div>
+                          <div class="place">↓ pokračuje nižšie</div>
+                        </div>
+                      </div>
+                    </li>
+                    <li><div class="node"><div class="card small lead"><div class="role">священник · kňaz</div><div class="name">Пётр <span class="pat">Ив.</span></div><div class="dates">1865? — po 1914</div></div></div></li>
+                    <li><div class="node"><div class="card small lead"><div class="role">священник · kňaz</div><div class="name">Павел <span class="pat">Ив.</span></div><div class="dates">ok. 1868 — po 1915</div></div></div></li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PERSHUKOV ancestral tree -->
+      <div class="fam-col">
+        <div class="fam-banner">Rod Першуковых</div>
+        <div class="tree">
+          <ul>
+            <li>
+              <div class="node couple">
+                <div class="card">
+                  <div class="role">псаломщик · žalmista</div>
+                  <div class="name">Виктор <span class="pat">Васильевич</span></div>
+                  <div class="dates">1. pol. 19. st. — do 1885</div>
+                  <div class="place">Tobolsk · Sofijsko-uspenský katedrálny chrám</div>
+                </div>
+                <div class="mar"><div class="bar"></div><div class="ring">∞</div><div class="bar"></div></div>
+                <div class="card">
+                  <div class="role">manželka</div>
+                  <div class="name">Вера <span class="pat">Алексеевна</span></div>
+                  <div class="dates">ok. 1840, Tobolsk</div>
+                </div>
+              </div>
+              <ul>
+                <li><div class="node"><div class="card small dim"><div class="role">syn</div><div class="name">Михаил</div><div class="dates">1864 † v detstve</div></div></div></li>
+                <li>
+                  <div class="node">
+                    <div class="card small focal">
+                      <span class="tag gold">prababka</span>
+                      <div class="role">manželka Александra</div>
+                      <div class="name">Мария</div>
+                      <div class="dates">* 22. 1. 1866</div>
+                      <div class="place">↓ pokračuje nižšie</div>
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <div class="node couple">
+                    <div class="card small dim"><div class="role">dcéra</div><div class="name">Евдокия</div><div class="dates">ok. 1868</div></div>
+                    <div class="mar"><div class="bar"></div><div class="ring" style="font-size:12px">∞</div><div class="bar"></div></div>
+                    <div class="card small"><div class="role">священник · kňaz</div><div class="name">Фёдор <span class="pat">Рещиков</span></div><div class="dates">1862 — 1915</div></div>
+                  </div>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- junction -->
+    <div class="junction">
+      <div class="arrows">↘ &nbsp; ↙</div>
+      <div class="marriage-banner">
+        <div class="who">Александр Иванович<small>Соколов · псаломщик</small></div>
+        <div class="ring">∞</div>
+        <div class="who">Мария Викторовна<small>roz. Першукова</small></div>
+        <div class="meta">sobáš · 21. 8. 1883 · Tobolsk</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DESCENDANTS ===================== -->
+  <section class="panel">
+    <div class="sec-head">
+      <div class="sec-kicker">Časť II</div>
+      <div class="sec-title">Potomkovia</div>
+      <div class="sec-desc">Z manželstva Александra a Марии pochádza osem detí. Najstarší syn Агафангел pokračoval v duchovnej službe; cez jeho líniu sa rod vetví ďalej k dnešku.</div>
+    </div>
+    <p class="hint">Po nájazde myšou sa políčko zvýrazní.</p>
+
+    <div class="tree">
+      <ul>
+        <li>
+          <!-- focal couple repeated as root of descent -->
+          <div class="node couple">
+            <div class="card focal" style="width:190px;">
+              <div class="role">псаломщик</div>
+              <div class="name">Александр <span class="pat">Ив.</span></div>
+              <div class="dates">ok. 1864 — 1943</div>
+            </div>
+            <div class="mar"><div class="bar"></div><div class="ring">∞</div><div class="yr">1883</div><div class="bar"></div></div>
+            <div class="card" style="width:175px;border-top-color:var(--burgundy);">
+              <div class="role">manželka</div>
+              <div class="name">Мария <span class="pat">Викт.</span></div>
+              <div class="dates">* 1866</div>
+            </div>
+          </div>
+
+          <ul>
+            <!-- Agafangel branch (continues) -->
+            <li>
+              <div class="node couple">
+                <div class="card small lead">
+                  <span class="tag gold">pradedo / línia</span>
+                  <div class="role">bývalý kňaz</div>
+                  <div class="name">Агафангел</div>
+                  <div class="dates">1884 — 1962</div>
+                  <div class="place">† Semipalatinsk, Kazach. SSR</div>
+                </div>
+                <div class="mar"><div class="bar"></div><div class="ring" style="font-size:12px">∞</div><div class="bar"></div></div>
+                <div class="card small dim"><div class="role">manželka</div><div class="name">(neuvedená)</div></div>
+              </div>
+              <ul>
+                <li><div class="node"><div class="card small"><div class="role">vnučka</div><div class="name">Евстолия</div><div class="dates">učiteľka</div></div></div></li>
+                <li><div class="node"><div class="card small"><div class="role">vnučka</div><div class="name">Вера</div><div class="dates">učiteľka</div></div></div></li>
+                <li>
+                  <div class="node"><div class="card small"><div class="role">vnučka</div><div class="name">Людмила</div><div class="dates">učiteľka</div></div></div>
+                  <ul>
+                    <li>
+                      <div class="node">
+                        <div class="card small" style="border-top-color:var(--burgundy-soft);border-style:dashed;background:rgba(110,31,35,.05);">
+                          <div class="role">ďalšie pokolenia</div>
+                          <div class="name" style="font-style:italic;font-size:13px;">… → Tvoja mama → Ty</div>
+                          <div class="place">mimo cirkevnej databázy</div>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+
+            <!-- other 7 children -->
+            <li><div class="node"><div class="card small dim"><div class="role">dcéra</div><div class="name">Еликонида</div><div class="dates">ok. 1887</div></div></div></li>
+            <li><div class="node"><div class="card small dim"><div class="role">dcéra</div><div class="name">Лидия</div><div class="dates">1891 — po 1896</div></div></div></li>
+            <li><div class="node"><div class="card small dim"><div class="role">dcéra</div><div class="name">Раиса</div><div class="dates">1893 — 1983</div></div></div></li>
+            <li><div class="node"><div class="card small dim"><div class="role">syn</div><div class="name">Ювеналий</div><div class="dates">1905 — 1973</div></div></div></li>
+            <li><div class="node"><div class="card small dim"><div class="role">syn</div><div class="name">Виталий</div><div class="dates">* ok. 1910</div></div></div></li>
+            <li><div class="node"><div class="card small dim"><div class="role">syn</div><div class="name">Николай</div><div class="dates">* ok. 1914</div></div></div></li>
+            <li><div class="node"><div class="card small dim"><div class="role">dcéra</div><div class="name">Людмила</div><div class="dates">—</div></div></div></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- footnote -->
+  <div class="footnote">
+    <div class="legend">
+      <span><span class="sw focal"></span> priama línia (predkovia)</span>
+      <span><span class="sw lead"></span> doložení duchovní</span>
+      <span><span class="sw norm"></span> ostatní členovia</span>
+      <span>∞ &nbsp;manželstvo</span>
+      <span>☦ &nbsp;pravoslávne duchovenstvo</span>
+    </div>
+    <div class="src">
+      Prameň: biografická databáza <em>«Духовенство Русской Православной Церкви в ХХ веке»</em> (pravoslavnoe-duhovenstvo.ru), spravovaná Spaso-Preobraženským Soloveckým monastierom.
+      Údaje na stránkach poskytla Наталья Миронова, praprapravnučka Ивана Алексеевича Соколова.<br>
+      Mnohé dátumy sú v origináli približné („ok.", „po 1875"). · Zostavené máj 2026
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
