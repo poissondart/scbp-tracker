@@ -972,6 +972,8 @@ input{outline:none}
 .bx-on{font-size:10px}
 .bx-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .bx-mod{font-size:12px}
+.bx-mini{font-size:11px;color:var(--tx3);margin-top:5px;min-height:0}
+.bx-mini .ok{color:var(--green);font-weight:700}.bx-mini .tight{color:var(--amber);font-weight:700}.bx-mini .no{color:var(--red);font-weight:700}
 
 #bxResults{margin:0 10px}
 .bx-hint{font-size:11px;color:var(--tx3);padding:8px 2px}
@@ -1682,6 +1684,7 @@ function bxRenderSetup() {
         <label class="bx-check bx-on"><input type="checkbox" ${t.on ? "checked" : ""} onchange="bxSetOn(${i},this.checked)"> tím</label>
       </div>
       <div class="bx-slots">${slots}</div>
+      <div class="bx-mini" id="bxMini${i}"></div>
     </div>`;
   }).join("");
 }
@@ -1747,7 +1750,11 @@ function bxCompute() {
   const inst = num(document.getElementById("bxInst").value) ?? 0;
   const gadget = document.getElementById("bxGadget").value;
   const team = document.getElementById("bxTeam").checked;
-  if (!mass || mass <= 0) { out.innerHTML = `<div class="bx-hint">Zadaj mass, resistance a instability zo scanu.</div>`; return; }
+  if (!mass || mass <= 0) {
+    out.innerHTML = `<div class="bx-hint">Zadaj mass, resistance a instability zo scanu.</div>`;
+    BX_SETUP.forEach((_, i) => { const m = document.getElementById("bxMini" + i); if (m) m.innerHTML = ""; });
+    return;
+  }
   const rock = { mass, res, inst };
   const evals = BX_SETUP.map(t => bxEval(t, rock, gadget));
 
@@ -1813,6 +1820,13 @@ function bxCompute() {
     </div>`;
   }).join("");
 
+  evals.forEach((e, i) => {
+    const m = document.getElementById("bxMini" + i); if (!m) return;
+    const sp = bxStatus(e.pas.margin), sa = bxStatus(e.act.margin);
+    m.innerHTML = `<span class="${sp.cls}">${e.pas.margin.toFixed(2)}×</span>` +
+      (e.hasAct ? ` · s aktívnymi <span class="${sa.cls}">${e.act.margin.toFixed(2)}×</span>` : "") +
+      ` · GZ ${e.gz.toFixed(2)}×` + (!minOk(e) ? ` · <span class="no">príliš silný</span>` : "");
+  });
   out.innerHTML = `<div class="bx-rec">${rec}${gtip ? `<div class="bx-gtip">${gtip}</div>` : ""}</div>${teamHtml}${cards}
     <div class="bx-foot">Potrebný výkon = 0,27 × mass × (1 + R/100), R upravené laserom, modulmi a gadgetom. Rezerva ${BX_MARGIN}×. Koeficient overený na jednom kameni v 4.10 — berte ako odhad.</div>`;
 }
