@@ -935,6 +935,8 @@ input{outline:none}
 .sl-row .sl-sig{color:var(--amber);font-weight:700;min-width:42px}
 .sl-row .sl-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sl-row .sl-time{color:var(--tx3);font-size:8px}
+.sl-row.sl-edit{cursor:pointer}
+.sl-row .sl-unk{color:var(--red)}
 
 @media(max-width:480px){
   .advisor-input{font-size:16px}
@@ -2355,12 +2357,23 @@ function allSigs() {
 }
 const ALL_SIGS = allSigs();
 
+// Vlastné záznamy pre skeny, ktoré databáza nepozná: { "12750": "Hadanite" }
+const CUSTOM_KEY = "minerscan_custom_v1";
+RARITY_LABELS.custom = "Vlastný";
+RARITY_VARS.custom = "--tx2";
+RARITY_VARS.unknown = "--red";
+function loadCustom() { try { return JSON.parse(localStorage.getItem(CUSTOM_KEY) || "{}"); } catch (e) { return {}; } }
+function saveCustom(c) { try { localStorage.setItem(CUSTOM_KEY, JSON.stringify(c)); } catch (e) {} }
+
 function quickMatches(input) {
   if (/^\d+$/.test(input) && input.length >= 3) {
     const v = parseInt(input);
     const exact = ALL_SIGS.filter(s => s.sig === v);
     if (exact.length) return { kind: "exact", list: exact, value: v };
+    const custom = loadCustom()[v];
+    if (custom) return { kind: "exact", list: [{ name: custom, rocks: null, sig: v, rarity: "custom" }], value: v };
     const pre = ALL_SIGS.filter(s => String(s.sig).startsWith(input)).sort((a, b) => a.sig - b.sig);
+    if (!pre.length && v >= 1000) return { kind: "unknown", list: [], value: v };
     return { kind: "prefix", list: pre };
   }
   const q = parseQuery(input);
@@ -2374,7 +2387,7 @@ function qrRow(s) {
   const c = `var(${RARITY_VARS[s.rarity] || "--tx3"})`;
   return `<div class="qr-item">
     <div class="qr-name"><span class="qr-dot" style="background:${c}"></span>${s.name}</div>
-    <div class="qr-sub"><span class="qr-rocks">×${s.rocks}</span><span class="qr-rar" style="color:${c}">${RARITY_LABELS[s.rarity] || ""}</span></div>
+    <div class="qr-sub">${s.rocks ? `<span class="qr-rocks">×${s.rocks}</span>` : ""}<span class="qr-rar" style="color:${c}">${RARITY_LABELS[s.rarity] || ""}</span></div>
     <div class="qr-sig">${s.sig.toLocaleString()}</div></div>`;
 }
 
@@ -2383,6 +2396,7 @@ function renderQuick(input) {
   if (!input) { el.innerHTML = `<span class="qr-muted">zadaj sken</span>`; return null; }
   const m = quickMatches(input);
   if (m.kind === "exact") { el.innerHTML = m.list.map(qrRow).join(""); return m; }
+  if (m.kind === "unknown") { el.innerHTML = `<span class="qr-muted" style="color:var(--red)">? neznámy sken</span><br><span class="qr-muted">zapíše sa do histórie · ťukni naň a pomenuj</span>`; return m; }
   if (m.kind === "none") {
     el.innerHTML = /^\d{1,2}$/.test(input) ? `<span class="qr-muted">min. 3 číslice</span>` : `<span class="qr-muted">len číslice alebo rozsah 4000-7500</span>`;
     return m;
@@ -2403,9 +2417,13 @@ function saveScanLog(log) {
 
 function logScan(m) {
   const log = loadScanLog();
-  const label = m.list.map(s => `${s.name} ×${s.rocks}`).join(" / ");
   if (log.length && log[0].sig === m.value) return; // same reading as last time
-  log.unshift({ sig: m.value, label, names: m.list.map(s => s.name), rarity: m.list[0].rarity, t: Date.now() });
+  if (m.kind === "unknown") {
+    log.unshift({ sig: m.value, label: "? neznámy · ťukni a pomenuj", names: [], rarity: "unknown", unknown: true, t: Date.now() });
+    saveScanLog(log); renderScanLog(); return;
+  }
+  const label = m.list.map(s => s.rocks ? `${s.name} ×${s.rocks}` : s.name).join(" / ");
+  log.unshift({ sig: m.value, label, names: m.list.map(s => s.name), rarity: m.list[0].rarity, custom: m.list[0].rarity === "custom", t: Date.now() });
   saveScanLog(log);
   renderScanLog();
 }
@@ -2422,8 +2440,9 @@ function renderScanLog() {
     const c = `var(${RARITY_VARS[e.rarity] || "--tx3"})`;
     const d = new Date(e.t);
     const hm = d.getHours().toString().padStart(2, "0") + ":" + d.getMinutes().toString().padStart(2, "0");
-    return `<div class="sl-row"><span class="qr-dot" style="background:${c}"></span>
-      <span class="sl-sig">${e.sig.toLocaleString()}</span><span class="sl-name">${e.label}</span><span class="sl-time">${hm}</span></div>`;
+    const editable = e.unknown || e.custom;
+    return `<div class="sl-row${editable ? " sl-edit" : ""}"${editable ? ` onclick="nameScan(${e.sig})"` : ""}><span class="qr-dot" style="background:${c}"></span>
+      <span class="sl-sig">${e.sig.toLocaleString()}</span><span class="sl-name${e.unknown ? " sl-unk" : ""}">${e.label}${e.custom ? " ✎" : ""}</span><span class="sl-time">${hm}</span></div>`;
   }).join("");
   el.innerHTML = `<div class="sl-freq">${chips}<button class="sl-clear" onclick="clearScanLog()" title="Vymazať históriu">✕</button></div>
     <div class="sl-rows">${rows}</div>`;
@@ -2435,12 +2454,29 @@ function clearScanLog() {
   renderScanLog();
 }
 
+function nameScan(sig) {
+  const custom = loadCustom();
+  const name = prompt(`Názov pre sken ${sig.toLocaleString()}:\n(prázdne = odstrániť vlastný záznam)`, custom[sig] || "");
+  if (name === null) return;
+  const n = name.trim();
+  if (n) custom[sig] = n; else delete custom[sig];
+  saveCustom(custom);
+  const log = loadScanLog().map(e => {
+    if (e.sig !== sig || !(e.unknown || e.custom)) return e;
+    return n ? { ...e, label: n, names: [n], rarity: "custom", custom: true, unknown: false }
+             : { ...e, label: "? neznámy · ťukni a pomenuj", names: [], rarity: "unknown", custom: false, unknown: true };
+  });
+  saveScanLog(log);
+  renderScanLog();
+  renderQuick(document.getElementById("scanInput").value.trim());
+}
+
 function onScanInput() {
   renderResults();
   const input = document.getElementById("scanInput").value.trim();
   const m = renderQuick(input);
   clearTimeout(scanLogTimer);
-  if (m && m.kind === "exact") scanLogTimer = setTimeout(() => logScan(m), SCANLOG_DELAY);
+  if (m && (m.kind === "exact" || m.kind === "unknown")) scanLogTimer = setTimeout(() => logScan(m), SCANLOG_DELAY);
 }
 
 (function initScanView() {
@@ -2451,7 +2487,7 @@ function onScanInput() {
   inp.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       const m = quickMatches(inp.value.trim());
-      if (m.kind === "exact") { clearTimeout(scanLogTimer); logScan(m); }
+      if (m.kind === "exact" || m.kind === "unknown") { clearTimeout(scanLogTimer); logScan(m); }
       inp.select();
     }
   });
