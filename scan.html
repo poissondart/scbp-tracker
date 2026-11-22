@@ -1597,7 +1597,7 @@ const BX_MODULES = {
   "Focus III":   { P: -5, OCWS: 40 },
   "Focus II":    { P: -10, OCWS: 37 },
   "Focus":       { P: -15, OCWS: 30 },
-  "Torrent III": { CR: 40, OCWS: -1 },
+  "Torrent III": { CR: 45, OCWS: -1 },
   "Torrent II":  { CR: 35, OCWS: -3 },
   "Torrent":     { CR: 30, OCWS: -10 },
   "Vaux-C3":     { P: -5 },
@@ -1699,16 +1699,18 @@ function bxEval(t, rock, gadgetName) {
   const L = BX_LASERS[t.laser];
   const G = BX_GADGETS[gadgetName] || {};
   const mods = (t.mods || []).filter(Boolean).map(m => ({ name: m, ...BX_MODULES[m] }));
-  let pPas = 1, pAct = 1, rPas = 1 + L.R / 100, rAct = 1, gz = 1 + L.OCWS / 100, li = 1 + L.LI / 100, liAct = 1;
+  // Výkon a resistance: násobia sa. Zelená zóna a instability: sčítavajú sa (overené na in-game loadout nástroji).
+  let pPas = 1, pAct = 1, rPas = 1 + L.R / 100, rAct = 1, gzSum = L.OCWS, liSum = L.LI, liActSum = 0;
   mods.forEach(m => {
+    gzSum += m.OCWS || 0;   // Clearcut: počítame ako zapnutý
     if (m.act) {
-      pAct *= 1 + (m.P || 0) / 100; rAct *= 1 + (m.R || 0) / 100; liAct *= 1 + (m.LI || 0) / 100;
-      gz *= 1 + (m.OCWS || 0) / 100;   // Clearcut: počítame ako zapnutý pri aktívnom režime
+      pAct *= 1 + (m.P || 0) / 100; rAct *= 1 + (m.R || 0) / 100; liActSum += m.LI || 0;
     } else {
-      pPas *= 1 + (m.P || 0) / 100; rPas *= 1 + (m.R || 0) / 100; li *= 1 + (m.LI || 0) / 100;
-      gz *= 1 + (m.OCWS || 0) / 100;
+      pPas *= 1 + (m.P || 0) / 100; rPas *= 1 + (m.R || 0) / 100; liSum += m.LI || 0;
     }
   });
+  let gz = Math.max(0.05, 1 + gzSum / 100);
+  let li = Math.max(0.05, 1 + liSum / 100), liAct = Math.max(0.05, 1 + (liSum + liActSum) / 100) / li;
   const gR = 1 + (G.R || 0) / 100;
   gz *= 1 + (G.OCWS || 0) / 100;
   li *= 1 + (G.LI || 0) / 100;
