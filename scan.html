@@ -975,7 +975,13 @@ input{outline:none}
 .bx-mini{font-size:11px;color:var(--tx3);margin-top:5px;min-height:0}
 .bx-mini .ok{color:var(--green);font-weight:700}.bx-mini .tight{color:var(--amber);font-weight:700}.bx-mini .no{color:var(--red);font-weight:700}
 
-#bxResults{margin:0 10px}
+#bxResults,#bxDetails{margin:0 10px}
+.bx-rec.bx-ok{background:rgba(74,222,128,.10);border-color:var(--green)}
+.bx-rec.bx-tight{background:rgba(251,191,36,.10);border-color:var(--amber)}
+.bx-rec.bx-no{background:rgba(248,113,113,.10);border-color:var(--red)}
+.bx-status{font-weight:700;letter-spacing:1px;font-size:12px;margin-bottom:3px}
+.bx-ok .bx-status{color:var(--green)}.bx-tight .bx-status{color:var(--amber)}.bx-no .bx-status{color:var(--red)}
+.bx-dhead{font-size:9px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin:4px 2px 4px}
 .bx-hint{font-size:11px;color:var(--tx3);padding:8px 2px}
 .bx-rec{background:rgba(251,191,36,.08);border:1px solid var(--amber-dim);padding:8px;font-size:13px;margin-bottom:6px;line-height:1.4}
 .bx-rec b{color:var(--amber)}
@@ -1127,6 +1133,7 @@ input{outline:none}
   </div>
   <div class="panel-body" id="bxSetup"></div>
 </div>
+<div id="bxDetails"></div>
 
 </div>
 
@@ -1752,6 +1759,7 @@ function bxCompute() {
   const team = document.getElementById("bxTeam").checked;
   if (!mass || mass <= 0) {
     out.innerHTML = `<div class="bx-hint">Zadaj mass, resistance a instability zo scanu.</div>`;
+    document.getElementById("bxDetails").innerHTML = "";
     BX_SETUP.forEach((_, i) => { const m = document.getElementById("bxMini" + i); if (m) m.innerHTML = ""; });
     return;
   }
@@ -1762,7 +1770,8 @@ function bxCompute() {
   const minOk = e => e.minP < e.pas.need;
   const candPas = evals.filter(e => e.pas.margin >= BX_MARGIN && minOk(e)).sort((a, b) => b.gz - a.gz);
   const candAct = evals.filter(e => e.hasAct && e.act.margin >= BX_MARGIN && minOk(e)).sort((a, b) => b.gz - a.gz);
-  let rec;
+  let rec, status = "no";
+  if (candPas.length || candAct.length) status = "ok";
   if (candPas.length) {
     const e = candPas[0];
     rec = `<b>${e.t.laser}</b> bez aktívnych modulov, throttle ~${pct(e.pas.throttle)}.`;
@@ -1776,7 +1785,7 @@ function bxCompute() {
       return { e, m: useAct ? e.act.margin : e.pas.margin, th: useAct ? e.act.throttle : e.pas.throttle, act: useAct };
     }).filter(x => x.m >= 1).sort((a, b) => b.m - a.m)[0];
     if (tooStrong) rec = `Všetky lasery sú na tento kameň príliš silné (minimum prekračuje potrebu). Skús Arbor alebo kameň preskoč.`;
-    else if (tight) rec = `Bez rezervy: <b>${tight.e.t.laser}</b>${tight.act ? ` so zapnutým ${tight.e.actNames.join(" + ")}` : ""} (${tight.m.toFixed(2)}×), throttle ~${pct(tight.th)}. Môže to vyjsť tesne — zváž tím alebo gadget.`;
+    else if (tight) status = "tight", rec = `Bez rezervy: <b>${tight.e.t.laser}</b>${tight.act ? ` so zapnutým ${tight.e.actNames.join(" + ")}` : ""} (${tight.m.toFixed(2)}×), throttle ~${pct(tight.th)}. Môže to vyjsť tesne — zváž tím alebo gadget.`;
     else rec = `Sólo to žiadny laser nedá. Zapni <b>Tím</b> alebo pozri gadget.`;
   }
 
@@ -1790,7 +1799,7 @@ function bxCompute() {
       const st = bxStatus(P / need);
       teamHtml = `<div class="bx-team ${st.cls}"><div><b>Tím (${on.map(e => e.t.laser).join(" + ")})</b> — všetky aktívne moduly zapnuté</div>
         <div>${fmt(P)} / potreba ${fmt(need)} → <b>${(P / need).toFixed(2)}×</b> · ${st.txt}${P / need >= 1 ? ` · throttle ~${pct(need / P)}` : ""}</div></div>`;
-      if (!candPas.length && !candAct.length && P / need >= 1) rec = `Sólo s rezervou nie, ale <b>tím</b> ho dá (${(P / need).toFixed(2)}×, throttle ~${pct(need / P)}).`;
+      if (!candPas.length && !candAct.length && P / need >= 1) status = P / need >= BX_MARGIN ? "ok" : "tight", rec = `Sólo s rezervou nie, ale <b>tím</b> ho dá (${(P / need).toFixed(2)}×, throttle ~${pct(need / P)}).`;
     } else teamHtml = `<div class="bx-hint">Zaškrtni pri vežiach „tím“, ktoré strieľajú.</div>`;
   }
 
@@ -1827,7 +1836,9 @@ function bxCompute() {
       (e.hasAct ? ` · s aktívnymi <span class="${sa.cls}">${e.act.margin.toFixed(2)}×</span>` : "") +
       ` · GZ ${e.gz.toFixed(2)}×` + (!minOk(e) ? ` · <span class="no">príliš silný</span>` : "");
   });
-  out.innerHTML = `<div class="bx-rec">${rec}${gtip ? `<div class="bx-gtip">${gtip}</div>` : ""}</div>${teamHtml}${cards}
+  const icon = { ok: "✓ SETUP OK", tight: "⚠ TESNE", no: "✗ NESTAČÍ" }[status];
+  out.innerHTML = `<div class="bx-rec bx-${status}"><div class="bx-status">${icon}</div>${rec}${gtip ? `<div class="bx-gtip">${gtip}</div>` : ""}</div>${teamHtml}`;
+  document.getElementById("bxDetails").innerHTML = `<div class="bx-dhead">Detail po vežiach</div>${cards}
     <div class="bx-foot">Potrebný výkon = 0,27 × mass × (1 + R/100), R upravené laserom, modulmi a gadgetom. Rezerva ${BX_MARGIN}×. Koeficient overený na jednom kameni v 4.10 — berte ako odhad.</div>`;
 }
 
