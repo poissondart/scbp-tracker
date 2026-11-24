@@ -1662,14 +1662,15 @@ const BX_MODULES = {
   "Clearcut":    { P: 15, OCWS: 30, act: "30 s × 6", craft: true },
 };
 
+// Gadgety (scminer.rocks 4.10.3 + Ironanvil): R/LI/OCWS v %, cl = cluster, cena v aUEC. Jeden gadget na kameň.
 const BX_GADGETS = {
   "—":         {},
-  "Waveshift": { LI: -35, OCWS: 100, CR: -30 },
-  "Sabir":     { R: -50, LI: 15, OCWS: 50 },
-  "BoreMax":   { R: 10, LI: -70 },
-  "OptiMax":   { R: -25, OCWS: -30 },
-  "Stalwart":  { LI: -35, OCWS: -30, CR: 50 },
-  "Okunis":    { OCWS: 50, CR: 100 },
+  "Sabir":     { R: -50, LI: 15, OCWS: 50, price: "13k", what: "resistance −50 %, zelená zóna +50 %, instability +15 %" },
+  "OptiMax":   { R: -30, OCWS: -30, cl: 60, price: "26k", what: "resistance −30 %, zelená zóna −30 %, cluster +60 %" },
+  "Waveshift": { LI: -35, OCWS: 100, price: "18k", what: "zelená zóna +100 %, instability −35 %" },
+  "BoreMax":   { R: 10, LI: -70, cl: 30, price: "13k", what: "instability −70 %, cluster +30 %, resistance +10 %" },
+  "Stalwart":  { LI: -35, OCWS: -30, cl: 30, price: "20k", what: "instability −35 %, cluster +30 %, zelená zóna −30 %" },
+  "Okunis":    { OCWS: 50, cl: -20, price: "22k", what: "zelená zóna +50 %, cluster −20 %" },
 };
 
 const BX_DEFAULT = [
@@ -1781,6 +1782,26 @@ function bxInstLabel(v) {
 function fmt(n) { return Math.round(n).toLocaleString("sk-SK"); }
 function pct(x) { return Math.round(x * 100) + " %"; }
 
+// Najlepší dosiahnuteľný výsledok s daným gadgetom (sólo pasívne/aktívne, prípadne tím)
+function bxBest(rock, gadgetName, team) {
+  const ev = BX_SETUP.map(t => bxEval(t, rock, gadgetName)).filter(e => e.minP < e.pas.need);
+  let best = { margin: 0, how: "", gz: 0 };
+  ev.forEach(e => {
+    if (e.pas.margin > best.margin) best = { margin: e.pas.margin, how: `${e.t.laser} bez aktívnych`, gz: e.gz };
+    if (e.hasAct && e.act.margin > best.margin * 1.0001 && e.act.margin >= BX_MARGIN && e.pas.margin < BX_MARGIN) best = { margin: e.act.margin, how: `${e.t.laser} s ${e.actNames.join(" + ")}`, gz: e.gz };
+    else if (e.hasAct && e.act.margin > best.margin && best.margin < BX_MARGIN) best = { margin: e.act.margin, how: `${e.t.laser} s ${e.actNames.join(" + ")}`, gz: e.gz };
+  });
+  if (team && best.margin < BX_MARGIN) {
+    const on = BX_SETUP.map(t => bxEval(t, rock, gadgetName)).filter(e => e.t.on);
+    if (on.length > 1) {
+      const m = on.reduce((s2, e) => s2 + e.act.P, 0) / Math.max(...on.map(e => e.act.need));
+      if (m > best.margin) best = { margin: m, how: "v tíme", gz: Math.min(...on.map(e => e.gz)) };
+    }
+  }
+  best.status = best.margin >= BX_MARGIN ? "ok" : best.margin >= 1 ? "tight" : "no";
+  return best;
+}
+
 function bxCompute() {
   const out = document.getElementById("bxResults");
   const mass = num(document.getElementById("bxMass").value);
@@ -1830,18 +1851,28 @@ function bxCompute() {
       const st = bxStatus(P / need);
       teamHtml = `<div class="bx-team ${st.cls}"><div><b>Tím (${on.map(e => e.t.laser).join(" + ")})</b> — všetky aktívne moduly zapnuté</div>
         <div>${fmt(P)} / potreba ${fmt(need)} → <b>${(P / need).toFixed(2)}×</b> · ${st.txt}${P / need >= 1 ? ` · throttle ~${pct(need / P)}` : ""}</div></div>`;
+      if (!candPas.length && !candAct.length && P / need < 1) rec = `Ani tím (${on.map(e => e.t.laser).join(" + ")}) to nedá: ${(P / need).toFixed(2)}×.`;
       if (!candPas.length && !candAct.length && P / need >= 1) status = P / need >= BX_MARGIN ? "ok" : "tight", rec = `Sólo s rezervou nie, ale <b>tím</b> ho dá (${(P / need).toFixed(2)}×, throttle ~${pct(need / P)}).`;
     } else teamHtml = `<div class="bx-hint">Zaškrtni pri vežiach „tím“, ktoré strieľajú.</div>`;
   }
 
-  // Gadget tip
+  // Gadget tip: ak setup nie je OK, vyskúšaj každý gadget a odporuč ten, ktorý ho dostane do OK
   let gtip = "";
   if (gadget === "—") {
-    const best = Math.max(...evals.map(e => Math.max(e.pas.margin, e.act.margin)));
-    const gzMin = Math.min(...evals.map(e => e.gz));
-    if (best < BX_MARGIN && res >= 15) gtip = "Tip: Sabir (resistance −50 %) môže pomôcť pri vysokej resistance.";
-    else if (inst >= 600) gtip = "Tip: BoreMax (instability −70 %).";
-    else if (inst >= 200 && gzMin < 1.5) gtip = "Tip: Waveshift (zelená zóna +100 %, instability −35 %).";
+    const rank = { ok: 2, tight: 1, no: 0 };
+    const tries = Object.keys(BX_GADGETS).filter(g => g !== "—").map(g => ({ g, ...bxBest(rock, g, team) }));
+    if (status !== "ok") {
+      const good = tries.filter(x => rank[x.status] > rank[status]).sort((a, b) => rank[b.status] - rank[a.status] || b.margin - a.margin || b.gz - a.gz);
+      if (good.length) {
+        const x = good[0], G = BX_GADGETS[x.g];
+        gtip = `💡 Gadget pomôže: <b>${x.g}</b> (${G.what}, ~${G.price}) → ${x.status === "ok" ? "rozbije" : "tesne"} ${x.how} (${x.margin.toFixed(2)}×).` +
+          (good[1] && good[1].status === x.status ? ` Alternatíva: ${good[1].g} (${good[1].margin.toFixed(2)}×).` : "");
+      } else if (status === "no") gtip = "Ani s gadgetom to tento setup nedá — treba tím alebo silnejšie moduly.";
+    } else {
+      const gzMin = Math.min(...evals.map(e => e.gz));
+      if (inst >= 600) gtip = `Tip: veľmi nestabilný kameň → <b>BoreMax</b> (${BX_GADGETS.BoreMax.what}).`;
+      else if (inst >= 200 && gzMin < 1.5) gtip = `Tip: úzka zelená zóna → <b>Waveshift</b> (${BX_GADGETS.Waveshift.what}).`;
+    }
   }
 
   const cards = evals.map((e, i) => {
