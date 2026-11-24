@@ -942,6 +942,7 @@ input{outline:none}
 .compact-panel{margin:8px 10px}
 .compact-panel .panel-header{padding:6px 10px}
 .compact-panel .panel-body{padding:8px}
+.mc-top{grid-template-columns:1fr 1fr 1fr !important}
 .mc-top,.bx-rock{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
 .bx-rock{grid-template-columns:1fr 1fr 1fr}
 .mc-field{display:flex;flex-direction:column;gap:3px;font-size:9px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;position:relative}
@@ -1118,10 +1119,12 @@ input{outline:none}
   </div>
   <div class="panel-body">
     <div class="mc-top">
-      <label class="mc-field"><span>Celkom (COMPOSITION)</span>
+      <label class="mc-field"><span>Celkom</span>
         <input class="mc-input" id="mcTotal" type="text" inputmode="decimal" placeholder="30.12" autocomplete="off"><em>SCU</em></label>
-      <label class="mc-field"><span>Zvýrazniť kvalitu od</span>
+      <label class="mc-field"><span>Kvalita od</span>
         <input class="mc-input" id="mcQual" type="text" inputmode="numeric" placeholder="800" value="800" autocomplete="off"><em>Q</em></label>
+      <label class="mc-field"><span>Výťažok</span>
+        <input class="mc-input" id="mcYield" type="text" inputmode="decimal" placeholder="45" value="45" autocomplete="off"><em>%</em></label>
     </div>
     <div class="mc-head"><span>Ruda</span><span>%</span><span>Kvalita</span><span>SCU</span></div>
     <div id="mcRows"></div>
@@ -1590,7 +1593,8 @@ function mcInit() {
       <div class="mc-out" id="mcO${i}">—</div></div>`;
   }
   document.getElementById("mcRows").innerHTML = html;
-  ["mcTotal", "mcQual"].forEach(id => document.getElementById(id).addEventListener("input", calcMass));
+  try { const y = localStorage.getItem("minerscan_yield_v1"); if (y) document.getElementById("mcYield").value = y; } catch (e) {}
+  ["mcTotal", "mcQual", "mcYield"].forEach(id => document.getElementById(id).addEventListener("input", calcMass));
   for (let i = 0; i < MC_ROWS; i++) ["mcN", "mcP", "mcQ"].forEach(p => document.getElementById(p + i).addEventListener("input", calcMass));
   calcMass();
 }
@@ -1598,9 +1602,12 @@ function mcInit() {
 function fmtK(v) { return v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : v >= 1000 ? Math.round(v / 1000) + "k" : Math.round(v) + ""; }
 function num(v) { const n = parseFloat(String(v).replace(",", ".")); return isNaN(n) ? null : n; }
 
-// Odhad po rafinácii: metóda s vysokým výťažkom (Dinyx a Ferron dávajú v hre rovnaký výťažok, ~93 %) a rafinéria s najlepším bonusom pre celý kameň
-const MC_YIELD = 0.93;
+// Odhad po rafinácii: výťažok zadaný používateľom (default 45 % = Dinyx/Ferron podľa scminer 4.10.3; presné číslo ukáže terminál) a rafinéria s najlepším bonusom pre celý kameň
+const MC_YIELD_KEY = "minerscan_yield_v1";
 function mcRefined(items) {
+  const yv = num(document.getElementById("mcYield").value);
+  const MC_YIELD = (yv && yv > 0 && yv <= 100 ? yv : 45) / 100;
+  try { localStorage.setItem(MC_YIELD_KEY, String(MC_YIELD * 100)); } catch (e) {}
   const ores = items.map(it => Object.keys(WM_PRICE).find(k => k.toLowerCase() === it[0].toLowerCase()) || it[0]);
   const stations = {};
   Object.values(WM_REFY).forEach(list => list.forEach(r => stations[r[0]] = r[1]));
@@ -1609,7 +1616,7 @@ function mcRefined(items) {
   let best = { st: null, v: items.reduce((sum, it) => sum + it[1] * MC_YIELD * it[2], 0) };
   Object.keys(stations).forEach(st => { const v = total(st); if (v > best.v) best = { st, v }; });
   const lev = total("Levski");
-  return `<br>Po rafinácii ≈ <b class="hq-t">${Math.round(best.v).toLocaleString("sk-SK")} aUEC</b> <span class="mc-note">(Dinyx/Ferron ~93 %${best.st ? `, ${best.st}` : ", základný výťažok"})</span>` +
+  return `<br>Po rafinácii ≈ <b class="hq-t">${Math.round(best.v).toLocaleString("sk-SK")} aUEC</b> <span class="mc-note">(výťažok ${Math.round(MC_YIELD * 1000) / 10} %${best.st ? `, ${best.st}` : ", základný výťažok"})</span>` +
     (best.st !== "Levski" ? `<br><span class="mc-note">Na Levski ≈ ${Math.round(lev).toLocaleString("sk-SK")} aUEC · bez poplatku za rafináciu</span>` : `<br><span class="mc-note">bez poplatku za rafináciu</span>`);
 }
 
