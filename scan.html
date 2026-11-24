@@ -1867,7 +1867,7 @@ function bxCompute() {
         const x = good[0], G = BX_GADGETS[x.g];
         gtip = `💡 Gadget pomôže: <b>${x.g}</b> (${G.what}, ~${G.price}) → ${x.status === "ok" ? "rozbije" : "tesne"} ${x.how} (${x.margin.toFixed(2)}×).` +
           (good[1] && good[1].status === x.status ? ` Alternatíva: ${good[1].g} (${good[1].margin.toFixed(2)}×).` : "");
-      } else if (status === "no") gtip = "Ani s gadgetom to tento setup nedá — treba tím alebo silnejšie moduly.";
+      } else if (status === "no") gtip = "Ani s gadgetom to tento setup nedá — treba ďalší laser v tíme alebo silnejšie (aktívne) moduly.";
     } else {
       const gzMin = Math.min(...evals.map(e => e.gz));
       if (inst >= 600) gtip = `Tip: veľmi nestabilný kameň → <b>BoreMax</b> (${BX_GADGETS.BoreMax.what}).`;
