@@ -1003,6 +1003,20 @@ input{outline:none}
 .bx-warn{padding:4px 8px 6px;color:var(--red);font-size:10px;line-height:1.4}
 .bx-foot{font-size:9px;color:var(--tx3);padding:4px 2px 10px;line-height:1.4}
 
+.wm-chips{display:flex;flex-wrap:wrap;gap:4px;max-height:112px;overflow-y:auto}
+.wm-chip,.wm-sys{background:var(--bg3);border:1px solid var(--line);color:var(--tx2);font-family:var(--mono);font-size:11px;padding:5px 7px;cursor:pointer}
+.wm-chip.on,.wm-sys.on{border-color:var(--amber);color:var(--amber);background:rgba(251,191,36,.08)}
+.wm-systems{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:8px}
+.wm-h{font-size:10px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin:10px 2px 4px;display:flex;justify-content:space-between}
+.wm-h em{font-style:normal;text-transform:none;letter-spacing:0}
+.wm-row{display:grid;grid-template-columns:1.6fr auto 1fr 44px;gap:6px;align-items:center;padding:5px 6px;border-bottom:1px solid var(--line);font-size:12px}
+.wm-loc{color:var(--tx)}
+.wm-badge{font-size:9px;padding:1px 4px;border:1px solid var(--line2);color:var(--tx3)}
+.wm-stanton{color:var(--blue);border-color:var(--blue)}.wm-pyro{color:var(--red);border-color:var(--red)}.wm-nyx{color:var(--green);border-color:var(--green)}
+.wm-bar{height:6px;background:var(--bg3);position:relative}.wm-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--amber)}
+.wm-pct{text-align:right;font-weight:700;color:var(--amber)}
+.wm-plus{color:var(--green)}
+
 @media(max-width:480px){
   .advisor-input{font-size:16px}
   .setup-metric .mvalue{font-size:13px}
@@ -1032,9 +1046,10 @@ input{outline:none}
 </div>
 
 <div class="tabs">
-  <button class="tab active" id="tab-scan" onclick="switchTab('scan')">◊ SCAN ID</button>
-  <button class="tab" id="tab-mass" onclick="switchTab('mass')">◊ MASS CALC</button>
+  <button class="tab active" id="tab-scan" onclick="switchTab('scan')">◊ SCAN</button>
+  <button class="tab" id="tab-mass" onclick="switchTab('mass')">◊ MASS</button>
   <button class="tab" id="tab-break" onclick="switchTab('break')">◊ BREAK</button>
+  <button class="tab" id="tab-where" onclick="switchTab('where')">◊ KDE</button>
 </div>
 
 <div id="view-scan">
@@ -1137,11 +1152,27 @@ input{outline:none}
 
 </div>
 
+<div id="view-where" style="display:none">
+<div class="panel compact-panel">
+  <div class="panel-header"><span class="panel-title">▸ KDE ŤAŽIŤ</span></div>
+  <div class="panel-body">
+    <input class="mc-input" id="wmSearch" placeholder="Hľadaj rudu… (napr. tung)" autocomplete="off" style="font-size:15px;margin-bottom:6px">
+    <div class="wm-chips" id="wmChips"></div>
+    <div class="wm-systems">
+      <button class="wm-sys on" data-sys="all" onclick="wmSys('all')">Všetky</button>
+      <button class="wm-sys" data-sys="Stanton" onclick="wmSys('Stanton')">Stanton</button>
+      <button class="wm-sys" data-sys="Pyro" onclick="wmSys('Pyro')">Pyro</button>
+      <button class="wm-sys" data-sys="Nyx" onclick="wmSys('Nyx')">Nyx</button>
+    </div>
+  </div>
+</div>
+<div id="wmOut" style="margin:0 10px"></div>
+</div>
 <div id="view-mass-end-marker" style="display:none"></div>
 
 <div class="footer">
   <div class="line uppercase">⛏ MinerScan</div>
-  <div class="line">Star Citizen Alpha 4.10 · Data: SCMDB, Ironanvil Gaming</div>
+  <div class="line">Star Citizen Alpha 4.10 · Data: SCMDB, Ironanvil Gaming, scminer.rocks</div>
   <div class="line uppercase" style="margin-top:8px">Community tool · Not affiliated with CIG</div>
 </div>
 
@@ -1851,6 +1882,55 @@ function bxInit() {
 }
 
 // ═══════════════════════════════════════════════
+// KDE ŤAŽIŤ — hotspoty (scminer.rocks, 4.10.3) a rafinérie
+// ═══════════════════════════════════════════════
+const WM_LOC = {"Beryl":[["Aaron Halo","Stanton",18],["Wala","Stanton",18],["ARC-L3","Stanton",6],["CRU-L5","Stanton",6],["MIC-L4","Stanton",6],["Aberdeen","Stanton",2],["Arial","Stanton",2],["Calliope","Stanton",2],["Cellin","Stanton",2],["Clio","Stanton",2],["Daymar","Stanton",2],["Euterpe","Stanton",2],["Hurston","Stanton",2],["Ita","Stanton",2],["Lyria","Stanton",2],["Magda","Stanton",2],["microTech","Stanton",2],["Yela","Stanton",2]],"Agricium":[["Aberdeen","Stanton",29],["Cellin","Stanton",29],["Daymar","Stanton",29],["Ita","Stanton",29],["Fuego (Pyro V)","Pyro",29],["Yela","Stanton",29],["Yela Belt","Stanton",29],["Aaron Halo","Stanton",14],["Magda","Stanton",14],["Vuur (Pyro V)","Pyro",14],["Terminus (Pyro VI)","Pyro",14],["Arial","Stanton",10],["Hurston","Stanton",10],["ARC-L3","Stanton",9],["CRU-L5","Stanton",9],["MIC-L4","Stanton",9]],"Aslarite":[["Aberdeen","Stanton",29],["Cellin","Stanton",29],["Daymar","Stanton",29],["Ita","Stanton",29],["Fuego (Pyro V)","Pyro",29],["Yela","Stanton",29],["Yela Belt","Stanton",29],["ARC-L5","Stanton",16],["CRU-L4","Stanton",16],["MIC-L3","Stanton",16],["Aaron Halo","Stanton",14],["Magda","Stanton",14],["Vuur (Pyro V)","Pyro",14],["Terminus (Pyro VI)","Pyro",14]],"Titanium":[["Aberdeen","Stanton",29],["Cellin","Stanton",29],["Daymar","Stanton",29],["Ita","Stanton",29],["Fuego (Pyro V)","Pyro",29],["Yela","Stanton",29],["Yela Belt","Stanton",29],["CRU-L1","Stanton",15],["CRU-L2","Stanton",15],["HUR-L3","Stanton",15],["Aaron Halo","Stanton",14],["Magda","Stanton",14],["Vuur (Pyro V)","Pyro",14],["Terminus (Pyro VI)","Pyro",14]],"Ice":[["Clio","Stanton",40],["Euterpe","Stanton",40],["Calliope","Stanton",33],["microTech","Stanton",33],["Glaciem Ring","Nyx",21],["Keeger Belt","Nyx",21],["Terminus (Pyro VI)","Pyro",21],["Yela Belt","Stanton",21],["Akiro Cluster","Pyro",15],["Aaron Halo","Stanton",10],["ARC-L5","Stanton",10],["CRU-L4","Stanton",10],["MIC-L3","Stanton",10],["CRU-L1","Stanton",9],["CRU-L2","Stanton",9],["HUR-L3","Stanton",9],["ARC-L3","Stanton",6],["CRU-L5","Stanton",6],["MIC-L4","Stanton",6]],"Aluminium":[["Hurston","Stanton",44],["Ita","Stanton",35],["Magda","Stanton",35],["Aberdeen","Stanton",30],["Arial","Stanton",22],["Keeger Belt","Nyx",21],["ARC-L1","Stanton",12],["ARC-L2","Stanton",12],["ARC-L4","Stanton",12],["HUR-L2","Stanton",12],["Aaron Halo","Stanton",10],["CRU-L3","Stanton",9],["HUR-L5","Stanton",9],["MIC-L1","Stanton",9],["MIC-L2","Stanton",9],["MIC-L5","Stanton",9],["HUR-L1","Stanton",8],["HUR-L4","Stanton",8]],"Copper":[["Hurston","Stanton",44],["Clio","Stanton",40],["Euterpe","Stanton",40],["Ignis (Pyro V)","Pyro",36],["Ita","Stanton",35],["Lyria","Stanton",35],["Pyro I","Pyro",33],["Monox (Pyro II)","Pyro",33],["Pyro IV","Pyro",26],["Wala","Stanton",26],["Arial","Stanton",22],["Terminus (Pyro VI)","Pyro",21],["Yela Belt","Stanton",21],["Akiro Cluster","Pyro",15],["Aaron Halo","Stanton",10],["ARC-L5","Stanton",10],["CRU-L4","Stanton",10],["MIC-L3","Stanton",10],["CRU-L1","Stanton",9],["CRU-L2","Stanton",9],["HUR-L3","Stanton",9],["ARC-L3","Stanton",6],["CRU-L5","Stanton",6],["MIC-L4","Stanton",6]],"Corundum":[["Hurston","Stanton",44],["Ita","Stanton",35],["Magda","Stanton",35],["Aberdeen","Stanton",30],["Arial","Stanton",22],["Keeger Belt","Nyx",21],["ARC-L1","Stanton",12],["ARC-L2","Stanton",12],["ARC-L4","Stanton",12],["HUR-L2","Stanton",12],["Aaron Halo","Stanton",10],["CRU-L3","Stanton",9],["HUR-L5","Stanton",9],["MIC-L1","Stanton",9],["MIC-L2","Stanton",9],["MIC-L5","Stanton",9],["HUR-L1","Stanton",8],["HUR-L4","Stanton",8]],"Hephaestanite":[["Ignis (Pyro V)","Pyro",36],["Vatra (Pyro V)","Pyro",36],["Daymar","Stanton",35],["Bloom (Pyro III)","Pyro",35],["Calliope","Stanton",33],["microTech","Stanton",33],["Monox (Pyro II)","Pyro",33],["Fairo (Pyro V)","Pyro",27],["Fuego (Pyro V)","Pyro",27],["Vuur (Pyro V)","Pyro",27],["Cellin","Stanton",26],["Yela","Stanton",26],["Arial","Stanton",22],["Akiro Cluster","Pyro",15],["ARC-L1","Stanton",12],["ARC-L2","Stanton",12],["ARC-L4","Stanton",12],["HUR-L2","Stanton",12],["Aaron Halo","Stanton",10],["CRU-L3","Stanton",9],["HUR-L5","Stanton",9],["MIC-L1","Stanton",9],["MIC-L2","Stanton",9],["MIC-L5","Stanton",9],["HUR-L1","Stanton",8],["HUR-L4","Stanton",8]],"Iron":[["Adir (Pyro V)","Pyro",44],["Vatra (Pyro V)","Pyro",36],["Lyria","Stanton",35],["Magda","Stanton",35],["Bloom (Pyro III)","Pyro",35],["Calliope","Stanton",33],["microTech","Stanton",33],["Pyro I","Pyro",33],["Monox (Pyro II)","Pyro",33],["Fairo (Pyro V)","Pyro",27],["Fuego (Pyro V)","Pyro",27],["Vuur (Pyro V)","Pyro",27],["Pyro IV","Pyro",26],["Wala","Stanton",26],["Glaciem Ring","Nyx",21],["Yela Belt","Stanton",21],["Akiro Cluster","Pyro",15],["Aaron Halo","Stanton",10],["ARC-L5","Stanton",10],["CRU-L4","Stanton",10],["MIC-L3","Stanton",10],["CRU-L1","Stanton",9],["CRU-L2","Stanton",9],["HUR-L3","Stanton",9],["ARC-L3","Stanton",6],["CRU-L5","Stanton",6],["MIC-L4","Stanton",6]],"Silicon":[["Ignis (Pyro V)","Pyro",36],["Vatra (Pyro V)","Pyro",36],["Daymar","Stanton",35],["Bloom (Pyro III)","Pyro",35],["Calliope","Stanton",33],["microTech","Stanton",33],["Monox (Pyro II)","Pyro",33],["Fairo (Pyro V)","Pyro",27],["Fuego (Pyro V)","Pyro",27],["Vuur (Pyro V)","Pyro",27],["Cellin","Stanton",26],["Yela","Stanton",26],["Arial","Stanton",22],["Akiro Cluster","Pyro",15],["Aaron Halo","Stanton",10]],"Tin":[["Hurston","Stanton",44],["Clio","Stanton",40],["Euterpe","Stanton",40],["Ignis (Pyro V)","Pyro",36],["Ita","Stanton",35],["Lyria","Stanton",35],["Pyro I","Pyro",33],["Monox (Pyro II)","Pyro",33],["Pyro IV","Pyro",26],["Wala","Stanton",26],["Arial","Stanton",22],["Terminus (Pyro VI)","Pyro",21],["Yela Belt","Stanton",21],["Akiro Cluster","Pyro",15],["Aaron Halo","Stanton",10]],"Quantainium":[["Aaron Halo","Stanton",2],["Aberdeen","Stanton",2],["Arial","Stanton",2],["Calliope","Stanton",2],["Cellin","Stanton",2],["Clio","Stanton",2],["Daymar","Stanton",2],["Euterpe","Stanton",2],["Hurston","Stanton",2],["Ita","Stanton",2],["Lyria","Stanton",2],["Magda","Stanton",2],["microTech","Stanton",2],["Wala","Stanton",2],["Yela","Stanton",2]],"Ouratite":[["Aberdeen","Stanton",10],["Arial","Stanton",10],["Hurston","Stanton",10],["Yela Belt","Stanton",10]],"Torite":[["Breaker Stations (geode)","Nyx",100],["Akiro Cluster","Pyro",29],["Glaciem Ring","Nyx",29],["Keeger Belt","Nyx",29],["CRU-L3","Stanton",11],["HUR-L5","Stanton",11],["MIC-L1","Stanton",11],["MIC-L2","Stanton",11],["MIC-L5","Stanton",11]],"Laranite":[["Pyro IV","Pyro",29],["Adir (Pyro V)","Pyro",29],["Fairo (Pyro V)","Pyro",29],["Wala","Stanton",29],["Lyria","Stanton",28],["HUR-L1","Stanton",13],["HUR-L4","Stanton",13],["Akiro Cluster","Pyro",10],["Bloom (Pyro III)","Pyro",10],["Ignis (Pyro V)","Pyro",10],["Vatra (Pyro V)","Pyro",10],["Terminus (Pyro VI)","Pyro",10]],"Riccite":[["Akiro Cluster","Pyro",10],["Bloom (Pyro III)","Pyro",10],["Ignis (Pyro V)","Pyro",10],["Vatra (Pyro V)","Pyro",10],["Adir (Pyro V)","Pyro",10],["Terminus (Pyro VI)","Pyro",10]],"Stileron":[["Akiro Cluster","Pyro",2],["Pyro I","Pyro",2],["Monox (Pyro II)","Pyro",2],["Bloom (Pyro III)","Pyro",2],["Pyro IV","Pyro",2],["Terminus (Pyro VI)","Pyro",2]],"Taranite":[["Cellin","Stanton",18],["Clio","Stanton",18],["Euterpe","Stanton",18],["Yela","Stanton",18],["ARC-L1","Stanton",13],["ARC-L2","Stanton",13],["ARC-L4","Stanton",13],["HUR-L2","Stanton",13],["Akiro Cluster","Pyro",2],["Pyro I","Pyro",2],["Monox (Pyro II)","Pyro",2],["Bloom (Pyro III)","Pyro",2],["Pyro IV","Pyro",2],["Terminus (Pyro VI)","Pyro",2]],"Tungsten":[["Pyro IV","Pyro",29],["Adir (Pyro V)","Pyro",29],["Fairo (Pyro V)","Pyro",29],["Wala","Stanton",29],["Lyria","Stanton",28],["ARC-L1","Stanton",20],["ARC-L2","Stanton",20],["ARC-L4","Stanton",20],["HUR-L2","Stanton",20],["Glaciem Ring","Nyx",10],["Keeger Belt","Nyx",10]],"Gold":[["Glaciem Ring","Nyx",18],["Keeger Belt","Nyx",18],["Bloom (Pyro III)","Pyro",18],["Pyro IV","Pyro",18],["Ignis (Pyro V)","Pyro",18],["Vatra (Pyro V)","Pyro",18],["Adir (Pyro V)","Pyro",18],["Vuur (Pyro V)","Pyro",18],["Terminus (Pyro VI)","Pyro",18],["ARC-L5","Stanton",10],["CRU-L4","Stanton",10],["MIC-L3","Stanton",10],["Fairo (Pyro V)","Pyro",9],["Fuego (Pyro V)","Pyro",9]],"Quartz":[["Daymar","Stanton",35],["Bloom (Pyro III)","Pyro",35],["Calliope","Stanton",33],["microTech","Stanton",33],["Monox (Pyro II)","Pyro",33],["Fuego (Pyro V)","Pyro",27],["Vuur (Pyro V)","Pyro",27],["Cellin","Stanton",26],["Yela","Stanton",26],["Arial","Stanton",22]],"Savrilium":[["Breaker Stations (geode)","Nyx",100],["Glaciem Ring","Nyx",2],["Keeger Belt","Nyx",2]],"Bexalite":[["Glaciem Ring","Nyx",18],["Keeger Belt","Nyx",18],["Bloom (Pyro III)","Pyro",18],["Pyro IV","Pyro",18],["Ignis (Pyro V)","Pyro",18],["Vatra (Pyro V)","Pyro",18],["Adir (Pyro V)","Pyro",18],["Vuur (Pyro V)","Pyro",18],["Terminus (Pyro VI)","Pyro",18],["CRU-L1","Stanton",10],["CRU-L2","Stanton",10],["HUR-L3","Stanton",10],["Fairo (Pyro V)","Pyro",9],["Fuego (Pyro V)","Pyro",9]],"Borase":[["Glaciem Ring","Nyx",18],["Keeger Belt","Nyx",18],["Bloom (Pyro III)","Pyro",18],["Pyro IV","Pyro",18],["Ignis (Pyro V)","Pyro",18],["Vatra (Pyro V)","Pyro",18],["Adir (Pyro V)","Pyro",18],["Vuur (Pyro V)","Pyro",18],["Terminus (Pyro VI)","Pyro",18],["Fairo (Pyro V)","Pyro",9],["Fuego (Pyro V)","Pyro",9],["HUR-L1","Stanton",8],["HUR-L4","Stanton",8]],"Lindinium":[["Glaciem Ring","Nyx",10],["Keeger Belt","Nyx",10]]};
+const WM_REF = [["Levski","Nyx",{"Quantainium":5,"Savrilium":1,"Lindinium":4,"Beryl":8,"Taranite":8,"Borase":8,"Gold":5,"Bexalite":8,"Laranite":7,"Titanium":8,"Tungsten":8,"Agricium":8,"Torite":1,"Hephaestanite":8,"Tin":9,"Quartz":8,"Corundum":8,"Copper":8,"Silicon":8,"Iron":8,"Aluminium":8,"Ice":10}],["MIC-L2 Long Forest","Stanton",{"Tungsten":9,"Bexalite":9,"Gold":9,"Titanium":6}],["MIC-L5 Modern Icarus","Stanton",{"Titanium":13,"Bexalite":12,"Borase":9,"Copper":9}],["ARC-L1 Wide Forest","Stanton",{"Quartz":11,"Beryl":7,"Titanium":5,"Quantainium":3}],["Nyx Gateway (Stanton)","Stanton",{"Quartz":11,"Beryl":7,"Titanium":5,"Quantainium":3}],["ARC-L2 Lively Pathway","Stanton",{"Gold":7,"Copper":6,"Quantainium":3,"Titanium":3}],["ARC-L4 Faint Glen","Stanton",{"Taranite":5}],["CRU-L1 Ambitious Dream","Stanton",{"Corundum":7,"Beryl":7,"Iron":2,"Tungsten":2}],["Pyro Gateway (Stanton)","Stanton",{"Corundum":7,"Beryl":7,"Iron":2,"Tungsten":2}],["HUR-L1 Green Glade","Stanton",{"Tungsten":4,"Quantainium":2,"Laranite":2,"Borase":1}],["HUR-L2 Faithful Dream","Stanton",{"Quantainium":2,"Beryl":1,"Corundum":1,"Gold":1}],["MIC-L1 Shallow Frontier","Stanton",{"Agricium":8,"Aluminium":7,"Copper":4,"Corundum":2}],["Terra Gateway (Stanton)","Stanton",{"Agricium":8,"Aluminium":7,"Copper":4,"Corundum":2}],["Checkmate","Pyro",{"Tungsten":4,"Laranite":2,"Quantainium":2,"Borase":1}],["Orbituary","Pyro",{"Tungsten":4,"Laranite":2,"Quantainium":2,"Borase":1}],["Ruin Station","Pyro",{"Tungsten":4,"Laranite":2,"Quantainium":2,"Borase":1}],["Nyx Gateway (Pyro)","Pyro",{"Tungsten":4,"Laranite":2,"Quantainium":2,"Borase":1}],["Stanton Gateway (Pyro)","Pyro",{"Tungsten":4,"Laranite":2,"Quantainium":2,"Borase":1}]];
+const WM_KEY = "minerscan_where_v1";
+let WM_SYS = "all";
+
+function wmInit() {
+  const ores = Object.keys(WM_LOC).sort();
+  document.getElementById("wmChips").innerHTML = ores.map(o =>
+    `<button class="wm-chip" data-ore="${o}" onclick="wmPick('${o}')">${o}</button>`).join("");
+  document.getElementById("wmSearch").addEventListener("input", e => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll(".wm-chip").forEach(b => b.style.display = !q || b.dataset.ore.toLowerCase().includes(q) ? "" : "none");
+    const hit = ores.filter(o => o.toLowerCase().startsWith(q));
+    if (q && hit.length === 1) wmPick(hit[0]);
+  });
+  let last = null; try { last = localStorage.getItem(WM_KEY); } catch (e) {}
+  if (last && WM_LOC[last]) wmPick(last); else wmRender(null);
+}
+
+function wmSys(s) { WM_SYS = s; document.querySelectorAll(".wm-sys").forEach(b => b.classList.toggle("on", b.dataset.sys === s)); wmRender(wmCur); }
+let wmCur = null;
+function wmPick(o) {
+  wmCur = o;
+  try { localStorage.setItem(WM_KEY, o); } catch (e) {}
+  document.querySelectorAll(".wm-chip").forEach(b => b.classList.toggle("on", b.dataset.ore === o));
+  wmRender(o);
+}
+
+function wmRender(o) {
+  const out = document.getElementById("wmOut");
+  if (!o) { out.innerHTML = `<div class="bx-hint">Vyber rudu — ukážem miesta od najčastejšieho výskytu a rafinérie s bonusom.</div>`; return; }
+  const rows = WM_LOC[o].filter(r => WM_SYS === "all" || r[1] === WM_SYS);
+  const max = Math.max(...WM_LOC[o].map(r => r[2]));
+  const locHtml = rows.length ? rows.map(r => `<div class="wm-row">
+      <span class="wm-loc">${r[0]}</span><span class="wm-badge wm-${r[1].toLowerCase()}">${r[1]}</span>
+      <span class="wm-bar"><i style="width:${Math.max(4, r[2] / max * 100)}%"></i></span><span class="wm-pct">${r[2]} %</span></div>`).join("")
+    : `<div class="bx-hint">V tomto systéme sa ${o} neťaží.</div>`;
+  const refs = WM_REF.filter(r => r[2][o] && (WM_SYS === "all" || r[1] === WM_SYS)).sort((a, b) => b[2][o] - a[2][o]);
+  const refHtml = refs.length ? refs.map(r => `<div class="wm-row wm-ref">
+      <span class="wm-loc">${r[0]}</span><span class="wm-badge wm-${r[1].toLowerCase()}">${r[1]}</span><span></span><span class="wm-pct wm-plus">+${r[2][o]} %</span></div>`).join("")
+    : `<div class="bx-hint">Žiadna rafinéria nemá pre ${o} známy bonus${WM_SYS === "all" ? "" : " v tomto systéme"}.</div>`;
+  out.innerHTML = `<div class="wm-h">Kde ťažiť ${o} <em>šanca výskytu v ložisku</em></div>${locHtml}
+    <div class="wm-h">Rafinérie s bonusom <em>výťažok</em></div>${refHtml}
+    <div class="bx-foot">Zdroj: scminer.rocks (4.10.3), Levski podľa Ironanvil Gaming. % = pravdepodobnosť, že ložisko na danom mieste obsahuje túto rudu. Pri rafinériách sú známe len najväčšie bonusy.</div>`;
+}
+
+// ═══════════════════════════════════════════════
 // TABS
 // ═══════════════════════════════════════════════
 function switchTab(tab) {
@@ -1860,6 +1940,8 @@ function switchTab(tab) {
   document.getElementById("view-scan").style.display = tab === "scan" ? "" : "none";
   document.getElementById("view-mass").style.display = tab === "mass" ? "" : "none";
   document.getElementById("view-break").style.display = tab === "break" ? "" : "none";
+  document.getElementById("tab-where").classList.toggle("active", tab === "where");
+  document.getElementById("view-where").style.display = tab === "where" ? "" : "none";
 }
 
 // ═══════════════════════════════════════════════
@@ -2028,6 +2110,7 @@ function onScanInput() {
 })();
 mcInit();
 bxInit();
+wmInit();
 renderResults();
 </script>
 </body>
