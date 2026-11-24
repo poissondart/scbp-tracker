@@ -1598,7 +1598,7 @@ function mcInit() {
 function fmtK(v) { return v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : v >= 1000 ? Math.round(v / 1000) + "k" : Math.round(v) + ""; }
 function num(v) { const n = parseFloat(String(v).replace(",", ".")); return isNaN(n) ? null : n; }
 
-// Odhad po rafinácii: najvýnosnejšia metóda (Dinyx Solventation ~93 %) a rafinéria s najlepším bonusom pre celý kameň
+// Odhad po rafinácii: metóda s vysokým výťažkom (Dinyx a Ferron dávajú v hre rovnaký výťažok, ~93 %) a rafinéria s najlepším bonusom pre celý kameň
 const MC_YIELD = 0.93;
 function mcRefined(items) {
   const ores = items.map(it => Object.keys(WM_PRICE).find(k => k.toLowerCase() === it[0].toLowerCase()) || it[0]);
@@ -1609,7 +1609,7 @@ function mcRefined(items) {
   let best = { st: null, v: items.reduce((sum, it) => sum + it[1] * MC_YIELD * it[2], 0) };
   Object.keys(stations).forEach(st => { const v = total(st); if (v > best.v) best = { st, v }; });
   const lev = total("Levski");
-  return `<br>Po rafinácii ≈ <b class="hq-t">${Math.round(best.v).toLocaleString("sk-SK")} aUEC</b> <span class="mc-note">(Dinyx ~93 %${best.st ? `, ${best.st}` : ", základný výťažok"})</span>` +
+  return `<br>Po rafinácii ≈ <b class="hq-t">${Math.round(best.v).toLocaleString("sk-SK")} aUEC</b> <span class="mc-note">(Dinyx/Ferron ~93 %${best.st ? `, ${best.st}` : ", základný výťažok"})</span>` +
     (best.st !== "Levski" ? `<br><span class="mc-note">Na Levski ≈ ${Math.round(lev).toLocaleString("sk-SK")} aUEC · bez poplatku za rafináciu</span>` : `<br><span class="mc-note">bez poplatku za rafináciu</span>`);
 }
 
