@@ -1598,10 +1598,25 @@ function mcInit() {
 function fmtK(v) { return v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : v >= 1000 ? Math.round(v / 1000) + "k" : Math.round(v) + ""; }
 function num(v) { const n = parseFloat(String(v).replace(",", ".")); return isNaN(n) ? null : n; }
 
+// Odhad po rafinácii: najvýnosnejšia metóda (Dinyx Solventation ~93 %) a rafinéria s najlepším bonusom pre celý kameň
+const MC_YIELD = 0.93;
+function mcRefined(items) {
+  const ores = items.map(it => Object.keys(WM_PRICE).find(k => k.toLowerCase() === it[0].toLowerCase()) || it[0]);
+  const stations = {};
+  Object.values(WM_REFY).forEach(list => list.forEach(r => stations[r[0]] = r[1]));
+  const bonus = (st, ore) => { const r = (WM_REFY[ore] || []).find(x => x[0] === st); return r ? r[2] : 0; };
+  const total = st => items.reduce((sum, it, i) => sum + it[1] * MC_YIELD * (1 + bonus(st, ores[i]) / 100) * it[2], 0);
+  let best = { st: null, v: items.reduce((sum, it) => sum + it[1] * MC_YIELD * it[2], 0) };
+  Object.keys(stations).forEach(st => { const v = total(st); if (v > best.v) best = { st, v }; });
+  const lev = total("Levski");
+  return `<br>Po rafinácii ≈ <b class="hq-t">${Math.round(best.v).toLocaleString("sk-SK")} aUEC</b> <span class="mc-note">(Dinyx ~93 %${best.st ? `, ${best.st}` : ", základný výťažok"})</span>` +
+    (best.st !== "Levski" ? `<br><span class="mc-note">Na Levski ≈ ${Math.round(lev).toLocaleString("sk-SK")} aUEC · bez poplatku za rafináciu</span>` : `<br><span class="mc-note">bez poplatku za rafináciu</span>`);
+}
+
 function calcMass() {
   const total = num(document.getElementById("mcTotal").value);
   const thr = num(document.getElementById("mcQual").value);
-  let pctSum = 0, valuable = 0, hq = 0, value = 0, quant = false;
+  let pctSum = 0, valuable = 0, hq = 0, value = 0, quant = false; const refItems = [];
   for (let i = 0; i < MC_ROWS; i++) {
     const name = document.getElementById("mcN" + i).value.trim();
     const pct = num(document.getElementById("mcP" + i).value);
@@ -1614,7 +1629,7 @@ function calcMass() {
     const scu = total * pct / 100;
     const pr = WM_PRICE[Object.keys(WM_PRICE).find(k => k.toLowerCase() === name.toLowerCase())];
     out.innerHTML = (scu < 0.1 ? scu.toFixed(3) : scu.toFixed(2)) + (pr ? `<small>≈${fmtK(scu * pr)}</small>` : "");
-    if (pr) value += scu * pr;
+    if (pr) { value += scu * pr; refItems.push([name, scu, pr]); }
     if (/quantainium/i.test(name)) quant = true;
     const inert = /inert/i.test(name);
     if (inert) row.classList.add("inert");
@@ -1628,7 +1643,7 @@ function calcMass() {
   const warn = pctSum > 100.5 ? ` · <span style="color:var(--red)">súčet ${pctSum.toFixed(1)} % &gt; 100</span>` : "";
   sum.innerHTML = `Cenné rudy: <b>${valuable.toFixed(2)} SCU</b>` +
     (thr !== null ? ` · z toho Q ${thr}+: <b class="hq-t">${hq.toFixed(2)} SCU</b>` : "") + warn +
-    (value ? `<br>Hodnota ≈ <b>${Math.round(value).toLocaleString("sk-SK")} aUEC</b> <span class="mc-note">(cena terminálu, pred stratou pri rafinácii)</span>` : "") +
+    (value ? `<br>Hodnota ≈ <b>${Math.round(value).toLocaleString("sk-SK")} aUEC</b> <span class="mc-note">(pri 100 % výťažku, cena terminálu)</span>` + mcRefined(refItems) : "") +
     (quant ? `<div class="wm-warn">⚠ Quantainium sa po vyťažení rozpadá (~15 min) — hneď do rafinérie.</div>` : "");
 }
 
