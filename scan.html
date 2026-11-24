@@ -1016,6 +1016,14 @@ input{outline:none}
 .wm-bar{height:6px;background:var(--bg3);position:relative}.wm-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--amber)}
 .wm-pct{text-align:right;font-weight:700;color:var(--amber)}
 .wm-plus{color:var(--green)}
+.wm-nav{margin:6px 0 4px;border:1px solid var(--line);background:var(--bg3);padding:6px 8px;font-size:12px;color:var(--tx2)}
+.wm-nav summary{cursor:pointer;color:var(--amber);font-weight:700}
+.wm-nav ol{margin:6px 0 6px 18px;padding:0;line-height:1.45}
+.wm-nav-h{font-size:10px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin:6px 0 3px}
+.wm-nav-row{display:grid;grid-template-columns:1.4fr .8fr 1fr;gap:6px;padding:3px 0;border-bottom:1px solid var(--line)}
+.wm-nav-row b{color:var(--amber)}
+.wm-nav a{color:var(--blue)}
+
 
 @media(max-width:480px){
   .advisor-input{font-size:16px}
@@ -1957,8 +1965,46 @@ function wmRender(o) {
       <span class="wm-loc">${r[0]}</span><span class="wm-badge wm-${r[1].toLowerCase()}">${r[1]}</span><span></span><span class="wm-pct wm-plus">+${r[2][o]} %</span></div>`).join("")
     : `<div class="bx-hint">Žiadna rafinéria nemá pre ${o} známy bonus${WM_SYS === "all" ? "" : " v tomto systéme"}.</div>`;
   out.innerHTML = `<div class="wm-h">Kde ťažiť ${o} <em>šanca výskytu v ložisku</em></div>${locHtml}
+    ${wmHaloHtml(o)}
     <div class="wm-h">Rafinérie s bonusom <em>výťažok</em></div>${refHtml}
     <div class="bx-foot">Zdroj: scminer.rocks (4.10.3), Levski podľa Ironanvil Gaming. % = pravdepodobnosť, že ložisko na danom mieste obsahuje túto rudu. Pri rafinériách sú známe len najväčšie bonusy.</div>`;
+}
+
+
+// Aaron Halo pásy (scminer.rocks Aaron Halo Navigator): [pás, orbita od slnka Gm, hrúbka Mm, relatívna hustota %, rudy]
+const WM_HALO = [
+  [1,"19.67–19.71",42,1,["Titanium","Tungsten","Beryl"]],
+  [2,"19.82–19.91",99,24,["Titanium","Tungsten","Beryl"]],
+  [3,"19.91–20.00",81,35,["Titanium","Tungsten","Beryl"]],
+  [4,"20.07–20.18",108,23,["Titanium","Tungsten","Beryl"]],
+  [5,"20.23–20.41",177,100,["Quantainium","Bexalite","Gold","Taranite"]],
+  [6,"20.41–20.54",133,33,["Titanium","Tungsten","Beryl"]],
+  [7,"20.54–20.88",341,36,["Quantainium","Agricium","Laranite","Hephaestanite"]],
+  [8,"20.88–21.05",165,26,["Titanium","Tungsten","Beryl"]],
+  [9,"21.05–21.13",86,25,["Titanium","Tungsten","Beryl"]],
+  [10,"21.13–21.30",166,33,["Titanium","Tungsten","Beryl"]],
+];
+// Výstup z quantum skoku do pásu 5 z ARC-L1: [cieľ, vzdialenosť na HUD pri vypnutí (Gm), okno (Mm)]
+const WM_HALO_B5 = [["CRU-L3",12.7,369],["CRU-L4",14.3,345],["Hurston",13.5,192],["Crusader",33.2,177],["CRU-L5",39.5,151]];
+
+function wmHaloHtml(o) {
+  const bands = WM_HALO.filter(b => b[4].includes(o)).sort((a, b) => b[3] - a[3]);
+  if (!bands.length || (WM_SYS !== "all" && WM_SYS !== "Stanton")) return "";
+  const rows = bands.map(b => `<div class="wm-row">
+      <span class="wm-loc">Pás ${b[0]}${b[0] === 5 ? " ★" : b[0] === 7 ? " ◆" : ""}</span><span class="wm-badge">${b[1]} Gm</span>
+      <span class="wm-bar"><i style="width:${Math.max(4, b[3])}%"></i></span><span class="wm-pct">${b[3]} %</span></div>`).join("");
+  const nav = WM_HALO_B5.map(d => `<div class="wm-nav-row"><span>ARC-L1 → ${d[0]}</span><b>${d[1]} Gm</b><span>okno ${d[2]} Mm</span></div>`).join("");
+  return `<div class="wm-h">Aaron Halo — pásy <em>relatívna hustota</em></div>${rows}
+    <details class="wm-nav"><summary>🧭 Ako sa dostať do pásu (quantum drop)</summary>
+      <ol>
+        <li>Pás nie je na mape. Nastav quantum skok na trasu, ktorá pás pretína (tabuľka nižšie).</li>
+        <li>Počas skoku sleduj vzdialenosť do cieľa na HUD.</li>
+        <li>Keď sa blíži uvedená hodnota, skok preruš (vypni quantum drive). Radšej o 0,1–0,2 Gm skôr a dolet dorovnaj.</li>
+        <li>Pás 5 má len ~177 Mm, pri rýchlosti ~90 Mm/s máš na reakciu pár sekúnd.</li>
+      </ol>
+      <div class="wm-nav-h">Pás 5 ★ z ARC-L1 — vypni pri vzdialenosti do cieľa:</div>${nav}
+      <div class="bx-foot">Iné trasy a pás 7: <a href="https://scminer.rocks/calculators/aaron-halo" target="_blank" rel="noopener">scminer.rocks Aaron Halo Navigator</a>. Rozdelenie rúd po pásoch je orientačné.</div>
+    </details>`;
 }
 
 // ═══════════════════════════════════════════════
