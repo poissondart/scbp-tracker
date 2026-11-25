@@ -989,6 +989,20 @@ input{outline:none}
 .bx-rec{background:rgba(251,191,36,.08);border:1px solid var(--amber-dim);padding:8px;font-size:13px;margin-bottom:6px;line-height:1.4}
 .bx-rec b{color:var(--amber)}
 .bx-gtip{font-size:11px;color:var(--blue);margin-top:4px}
+.bx-plan{border:1px solid var(--line2);padding:8px;margin-bottom:6px;font-size:12px}
+.bx-plan-h{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--tx3);text-transform:uppercase;margin-bottom:6px}
+.bx-pl{border-left:3px solid var(--line2);padding:5px 8px;margin-bottom:6px;background:var(--bg3)}
+.bx-pl.ok{border-left-color:var(--green)}.bx-pl.tight{border-left-color:var(--amber)}.bx-pl.no{border-left-color:var(--red);opacity:.7}
+.bx-pl-top{display:flex;justify-content:space-between;gap:6px;align-items:center;margin-bottom:3px}
+.bx-pl-top b{font-family:var(--mono)}.bx-pl.ok .bx-pl-top b{color:var(--green)}.bx-pl.tight .bx-pl-top b{color:var(--amber)}
+.bx-pl-t{font-size:11px;color:var(--tx2);line-height:1.5}
+.bx-pl-t i{font-style:normal;color:var(--amber)}
+.bx-apply{background:var(--bg2);border:1px solid var(--amber-dim);color:var(--amber);font-family:var(--mono);font-size:10px;padding:3px 7px;cursor:pointer}
+.bx-mit{font-size:11px;color:var(--blue);line-height:1.5;margin-top:4px}
+.bx-inv summary{cursor:pointer;list-style:none}.bx-inv summary::-webkit-details-marker{display:none}
+.bx-inv-g{font-size:10px;color:var(--tx3);margin:6px 0 3px;font-family:var(--mono);letter-spacing:.1em}
+.bx-inv-list{display:flex;flex-wrap:wrap;gap:4px}
+.bx-inv-list label{font-size:11px;background:var(--bg3);border:1px solid var(--line);padding:3px 6px;display:flex;gap:4px;align-items:center}
 .bx-team{border:1px solid var(--line2);padding:6px 8px;font-size:11px;margin-bottom:6px;line-height:1.5}
 .bx-card{border:1px solid var(--line);background:var(--panel);margin-bottom:6px;font-size:11px}
 .bx-card-head{display:flex;justify-content:space-between;gap:6px;padding:5px 8px;background:var(--bg3);border-bottom:1px solid var(--line)}
@@ -1158,6 +1172,7 @@ input{outline:none}
 </div>
 
 <div id="bxResults"></div>
+<div id="bxPlan"></div>
 
 <div class="panel compact-panel">
   <div class="panel-header">
@@ -1166,6 +1181,10 @@ input{outline:none}
   </div>
   <div class="panel-body" id="bxSetup"></div>
 </div>
+<details class="panel compact-panel bx-inv">
+  <summary class="panel-header"><span class="panel-title">▸ Inventár pre návrh</span><span class="panel-meta">čo máš v MOLE</span></summary>
+  <div class="panel-body" id="bxInv"></div>
+</details>
 <div id="bxDetails"></div>
 
 </div>
@@ -1734,6 +1753,7 @@ function bxResetSetup() {
   BX_SETUP = JSON.parse(JSON.stringify(BX_DEFAULT));
   bxSaveSetup(BX_SETUP);
   bxRenderSetup();
+  bxRenderInv();
   bxCompute();
 }
 
@@ -1855,10 +1875,12 @@ function bxCompute() {
   if (!mass || mass <= 0) {
     out.innerHTML = `<div class="bx-hint">Zadaj mass, resistance a instability zo scanu.</div>`;
     document.getElementById("bxDetails").innerHTML = "";
+    bxRenderPlan(null);
     BX_SETUP.forEach((_, i) => { const m = document.getElementById("bxMini" + i); if (m) m.innerHTML = ""; });
     return;
   }
   const rock = { mass, res, inst };
+  bxRenderPlan(rock, gadget);
   const evals = BX_SETUP.map(t => bxEval(t, rock, gadget));
 
   // Odporúčanie: solo laser s rezervou, najprv bez aktívnych, uprednostni širšiu zelenú zónu a vhodný min. výkon
@@ -1945,6 +1967,153 @@ function bxCompute() {
   out.innerHTML = `<div class="bx-rec bx-${status}"><div class="bx-status">${icon}</div>${rec}${gtip ? `<div class="bx-gtip">${gtip}</div>` : ""}</div>${teamHtml}`;
   document.getElementById("bxDetails").innerHTML = `<div class="bx-dhead">Detail po vežiach</div>${cards}
     <div class="bx-foot">Potrebný výkon = 0,27 × mass × (1 + R/100), R upravené laserom, modulmi a gadgetom. Rezerva ${BX_MARGIN}×. Koeficient overený na jednom kameni v 4.10 — berte ako odhad.</div>`;
+}
+
+// ═══ NÁVRH SETUPU — prehľadá kombinácie laserov a modulov z inventára ═══
+const BX_INV_KEY = "minerscan_inv_v1";
+const BX_INV_DEFAULT = { lasers: ["Helix II", "Hofstede-S2", "Arbor MH2", "Impact II"], mods: ["Rieger-C3", "Focus III", "Stampede", "Surge"] };
+function bxLoadInv() { try { const v = JSON.parse(localStorage.getItem(BX_INV_KEY)); if (v && v.lasers && v.mods) return v; } catch (e) {} return JSON.parse(JSON.stringify(BX_INV_DEFAULT)); }
+let BX_INV = bxLoadInv();
+function bxInvToggle(kind, name, on) {
+  const a = BX_INV[kind]; const i = a.indexOf(name);
+  if (on && i < 0) a.push(name); if (!on && i >= 0) a.splice(i, 1);
+  try { localStorage.setItem(BX_INV_KEY, JSON.stringify(BX_INV)); } catch (e) {}
+  bxCompute();
+}
+function bxRenderInv() {
+  const box = (kind, list) => `<div class="bx-inv-list">${list.map(n => `<label><input type="checkbox" ${BX_INV[kind].includes(n) ? "checked" : ""} onchange="bxInvToggle('${kind}','${n}',this.checked)">${n}</label>`).join("")}</div>`;
+  const mods = Object.keys(BX_MODULES);
+  document.getElementById("bxInv").innerHTML =
+    `<div class="bx-inv-g">LASERY</div>${box("lasers", Object.keys(BX_LASERS))}
+     <div class="bx-inv-g">PASÍVNE MODULY</div>${box("mods", mods.filter(m => !BX_MODULES[m].act))}
+     <div class="bx-inv-g">AKTÍVNE MODULY</div>${box("mods", mods.filter(m => BX_MODULES[m].act))}
+     <div class="bx-hint">Návrh počíta s tým, že zaškrtnutý laser/modul môžeš dať na viac veží naraz (máš viac kusov).</div>`;
+}
+
+// všetky kombinácie s opakovaním (k prvkov z pola)
+function bxCombos(arr, k, start = 0, cur = [], out = []) {
+  if (cur.length === k) { out.push(cur.slice()); return out; }
+  for (let i = start; i < arr.length; i++) { cur.push(arr[i]); bxCombos(arr, k, i, cur, out); cur.pop(); }
+  return out;
+}
+
+function bxConfigs(rock, gadget) {
+  const mods = [""].concat(BX_INV.mods.filter(m => BX_MODULES[m]));
+  const cfgs = [];
+  BX_INV.lasers.filter(l => BX_LASERS[l]).forEach(laser => {
+    bxCombos(mods, BX_LASERS[laser].slots).forEach(c => {
+      const m = c.filter(Boolean);
+      // aktívny modul dvakrát na jednom laseri nedáva zmysel (aj tak sa púšťa jeden po druhom)
+      const acts = m.filter(x => BX_MODULES[x].act);
+      if (new Set(acts).size !== acts.length) return;
+      const e = bxEval({ laser, mods: m }, rock, gadget);
+      if (e.minP >= e.pas.need) return; // príliš silný, prepáli aj na minime
+      cfgs.push({ laser, mods: m, e, nAct: acts.length, instF: e.inst / Math.max(1e-9, rock.inst || 1), instFA: e.instAct / Math.max(1e-9, rock.inst || 1) });
+    });
+  });
+  return cfgs;
+}
+
+// koľko zmien oproti aktuálnemu setupu (laser = 2, modul = 1), najlepšie priradenie na veže
+function bxChanges(team) {
+  const perms = a => a.length <= 1 ? [a] : a.flatMap((x, i) => perms(a.slice(0, i).concat(a.slice(i + 1))).map(p => [x].concat(p)));
+  let best = 1e9;
+  const slots = [0, 1, 2];
+  bxCombos(slots, team.length).filter(c => new Set(c).size === c.length).forEach(pos => perms(pos).forEach(pp => {
+    let ch = 0;
+    team.forEach((c, j) => {
+      const cur = BX_SETUP[pp[j]];
+      if (cur.laser !== c.laser) ch += 2 + c.mods.length;
+      else { const a = (cur.mods || []).filter(Boolean).slice(), b = c.mods.slice(); b.forEach(x => { const i = a.indexOf(x); if (i >= 0) a.splice(i, 1); else ch++; }); ch += a.length; }
+    });
+    best = Math.min(best, ch);
+  }));
+  return best;
+}
+
+function bxTeamEval(team, rock) {
+  const P = team.reduce((s, c) => s + c.e.pas.P, 0), need = Math.max(...team.map(c => c.e.pas.need));
+  let useAct = false, margin = P / need, Pt = P, nt = need;
+  if (margin < BX_MARGIN && team.some(c => c.nAct)) {
+    const PA = team.reduce((s, c) => s + c.e.act.P, 0), nA = Math.max(...team.map(c => c.e.act.need));
+    if (PA / nA > margin) { useAct = true; margin = PA / nA; Pt = PA; nt = nA; }
+  }
+  const status = margin >= BX_MARGIN ? "ok" : margin >= 1 ? "tight" : "no";
+  const gz = Math.min(...team.map(c => c.e.gz));
+  const instF = Math.max(...team.map(c => useAct ? c.instFA : c.instF));
+  const nAct = useAct ? team.reduce((s, c) => s + c.nAct, 0) : 0;
+  const hiInst = (rock.inst || 0) >= 200;
+  const score = status === "no" ? margin * 100 : (status === "ok" ? 1000 : 500) + Math.min(margin, 2) * 20
+    - nAct * 6 - bxChanges(team) * 1.5 + Math.log(gz) * 25 - (hiInst ? Math.log(instF) * 30 : 0);
+  return { team, margin, status, useAct, gz, instF, nAct, score, throttle: nt / Pt };
+}
+
+function bxPlan(rock, gadget) {
+  const cfgs = bxConfigs(rock, gadget);
+  if (!cfgs.length) return [];
+  const ratio = c => c.e.act.P / c.e.act.need;
+  const pool = Array.from(new Set(cfgs.slice().sort((a, b) => ratio(b) - ratio(a)).slice(0, 24)
+    .concat(cfgs.filter(c => ratio(c) > 0.3).sort((a, b) => b.e.gz - a.e.gz).slice(0, 10))));
+  const res = [];
+  [1, 2, 3].forEach(n => {
+    const src = n === 1 ? cfgs : pool;
+    let best = null;
+    bxCombos(src, n).forEach(team => { const t = bxTeamEval(team, rock); if (!best || t.score > best.score) best = t; });
+    if (best) res.push({ n, ...best });
+  });
+  return res;
+}
+
+// Ktoré moduly/gadgety pomôžu proti "zlým" vlastnostiam kameňa
+function bxMitigation(rock) {
+  const owned = m => BX_INV.mods.includes(m) ? `<b>${m}</b>` : `${m} <span style="opacity:.6">(nemáš)</span>`;
+  const tips = [];
+  if ((rock.res || 0) >= 40) tips.push(`Vysoká resistance (${rock.res} %): ${["Surge", "Rime", "Lifeline", "Deluge", "Overrun"].map(owned).join(", ")} znižujú resistance; laser Helix II/Hofstede-S2 (−30 %), gadget <b>Sabir</b> (−50 %) alebo OptiMax (−30 %).`);
+  if ((rock.inst || 0) >= 200) tips.push(`Nestabilný kameň (${rock.inst}): ${["Lifeline", "Stampede", "Optimum"].map(owned).join(", ")} znižujú instability; laser Arbor MH2 (−35 %), gadget <b>BoreMax</b> (−70 %), Waveshift alebo Stalwart (−35 %). Vyhni sa Surge (+10 %) a Sabiru (+15 %).`);
+  if ((rock.inst || 0) >= 200) tips.push(`Úzka zelená zóna pri nestabilite: ${["Focus III", "XTR-XL", "Clearcut"].map(owned).join(", ")} ju rozširujú; gadget Waveshift (+100 %) alebo Okunis (+50 %).`);
+  return tips;
+}
+
+function bxApplyPlan(i) {
+  const p = (window.BX_LAST_PLAN || [])[i]; if (!p) return;
+  BX_SETUP = [0, 1, 2].map(j => p.team[j] ? { laser: p.team[j].laser, mods: p.team[j].mods.slice(), on: true }
+    : { laser: BX_SETUP[j].laser, mods: BX_SETUP[j].mods, on: false });
+  bxSaveSetup(BX_SETUP); bxRenderSetup();
+  const t = document.getElementById("bxTeam"); t.checked = p.n > 1;
+  bxCompute();
+}
+
+function bxRenderPlan(rock, gadget) {
+  const el = document.getElementById("bxPlan");
+  if (!rock) { el.innerHTML = ""; return; }
+  const plan = bxPlan(rock, gadget);
+  window.BX_LAST_PLAN = plan;
+  const ppl = n => n === 1 ? "1 človek" : n + " ľudia";
+  const rows = plan.map((p, i) => {
+    const turrets = p.team.map((c, j) => {
+      const acts = c.mods.filter(m => BX_MODULES[m].act);
+      return `Veža ${j + 1}: <b>${c.laser}</b> + ${c.mods.length ? c.mods.join(" · ") : "bez modulov"}${p.useAct && acts.length ? ` → zapnúť <i>${acts.join(" + ")}</i>` : ""}`;
+    }).join("<br>");
+    const st = { ok: "rozbije", tight: "tesne", no: "nestačí" }[p.status];
+    return `<div class="bx-pl ${p.status}"><div class="bx-pl-top"><span>${ppl(p.n)} · <b>${p.margin.toFixed(2)}×</b> ${st}${p.margin >= 1 ? ` · throttle ~${pct(p.throttle)}` : ""}</span>
+      ${p.status !== "no" ? `<button class="bx-apply" onclick="bxApplyPlan(${i})">Použiť</button>` : ""}</div>
+      <div class="bx-pl-t">${turrets}<br><span style="opacity:.7">zelená zóna ${p.gz.toFixed(2)}× · instability ×${p.instF.toFixed(2)}</span></div></div>`;
+  }).join("");
+  const firstOk = plan.find(p => p.status !== "no");
+  let gfix = "";
+  if (gadget === "—" && !(firstOk && firstOk.n === 1 && firstOk.status === "ok")) {
+    const cur = firstOk ? firstOk.n : 4;
+    const alt = Object.keys(BX_GADGETS).filter(g => g !== "—").map(g => {
+      const pl = bxPlan(rock, g).find(p => p.status === "ok"); return pl ? { g, n: pl.n, m: pl.margin } : null;
+    }).filter(x => x && x.n < cur).sort((a, b) => a.n - b.n || b.m - a.m)[0];
+    if (alt) gfix = `<div class="bx-gtip">💡 S gadgetom <b>${alt.g}</b> (${BX_GADGETS[alt.g].what}, ~${BX_GADGETS[alt.g].price}) to dá už ${ppl(alt.n)} s rezervou (${alt.m.toFixed(2)}×) — vyber ho hore v „Gadget na kameni“.</div>`;
+  }
+  const mit = bxMitigation(rock);
+  el.innerHTML = `<div class="bx-plan"><div class="bx-plan-h">Návrh setupu z inventára${gadget !== "—" ? ` · gadget ${gadget}` : ""}</div>
+    ${firstOk ? `<div class="bx-hint" style="padding:0 0 6px">Najmenej ľudí: <b>${ppl(firstOk.n)}</b>. Pri rovnakom výsledku uprednostní pasívne moduly, širšiu zelenú zónu a čo najmenej prestavby oproti aktuálnemu setupu.</div>` : `<div class="bx-hint" style="padding:0 0 6px">Ani 3 veže z inventára to nedajú — pridaj gadget alebo silnejšie moduly do inventára.</div>`}
+    ${rows || `<div class="bx-hint">V inventári nie je laser, ktorý by na tento kameň nebol príliš silný.</div>`}
+    ${gfix}
+    ${mit.length ? `<div class="bx-mit">${mit.map(t => "🛡 " + t).join("<br>")}</div>` : ""}</div>`;
 }
 
 function bxInit() {
