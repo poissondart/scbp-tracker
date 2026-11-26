@@ -1131,6 +1131,29 @@ input{outline:none}
 
 <div class="panel compact-panel">
   <div class="panel-header">
+    <div class="panel-title">▸ Rýchly prepočet</div>
+    <div class="panel-meta">RAW → RAFINOVANÉ</div>
+  </div>
+  <div class="panel-body">
+    <div class="mc-top">
+      <label class="mc-field"><span>Ruda</span>
+        <select class="mc-input" id="qcOre"></select></label>
+      <label class="mc-field"><span>Pred rafináciou</span>
+        <input class="mc-input" id="qcScu" type="text" inputmode="decimal" placeholder="40" autocomplete="off"><em>SCU</em></label>
+      <label class="mc-field"><span>Metóda</span>
+        <select class="mc-input" id="qcYield">
+          <option value="45">45 %</option>
+          <option value="38.25">38,25 %</option>
+          <option value="31.5">31,5 %</option>
+        </select></label>
+    </div>
+    <div class="mc-note" style="margin:-2px 0 8px">45 % Dinyx · Ferron · Pyrometric — 38,25 % Gaskin · Electrostarolysis · Thermonatic — 31,5 % Cormack · XCR</div>
+    <div class="mc-sum" id="qcOut"></div>
+  </div>
+</div>
+
+<div class="panel compact-panel">
+  <div class="panel-header">
     <div class="panel-title">▸ Zloženie kameňa</div>
     <div class="panel-meta">SCU PODĽA RUDY</div>
   </div>
@@ -1620,6 +1643,38 @@ function mcInit() {
   ["mcTotal", "mcQual", "mcYield"].forEach(id => document.getElementById(id).addEventListener("input", calcMass));
   for (let i = 0; i < MC_ROWS; i++) ["mcN", "mcP", "mcQ"].forEach(p => document.getElementById(p + i).addEventListener("input", calcMass));
   calcMass();
+}
+
+// ═══ Rýchly prepočet: ruda + SCU pred rafináciou → SCU po rafinácii a predajná hodnota ═══
+const QC_KEY = "minerscan_qc_v1";
+function qcInit() {
+  const sel = document.getElementById("qcOre");
+  const ores = Object.keys(WM_PRICE).sort((a, b) => WM_PRICE[b] - WM_PRICE[a]);
+  sel.innerHTML = ores.map(o => `<option value="${o}">${o}</option>`).join("");
+  try { const v = JSON.parse(localStorage.getItem(QC_KEY)); if (v) { if (WM_PRICE[v.ore]) sel.value = v.ore; if (v.y) document.getElementById("qcYield").value = v.y; } } catch (e) {}
+  ["qcOre", "qcYield"].forEach(id => document.getElementById(id).addEventListener("change", qcCalc));
+  document.getElementById("qcScu").addEventListener("input", qcCalc);
+  qcCalc();
+}
+function qcCalc() {
+  const ore = document.getElementById("qcOre").value, y = parseFloat(document.getElementById("qcYield").value) / 100;
+  const raw = num(document.getElementById("qcScu").value), out = document.getElementById("qcOut");
+  try { localStorage.setItem(QC_KEY, JSON.stringify({ ore, y: document.getElementById("qcYield").value })); } catch (e) {}
+  if (!raw || raw <= 0) { out.innerHTML = `<span class="mc-note">Zadaj množstvo rudy pred rafináciou (SCU).</span>`; return; }
+  const price = WM_PRICE[ore];
+  const f = n => (Math.round(n * 100) / 100).toLocaleString("sk-SK");
+  const aU = n => Math.round(n).toLocaleString("sk-SK") + " aUEC";
+  const base = raw * y;
+  const bonus = (WM_REFY[ore] || []).slice().sort((a, b) => b[2] - a[2]);
+  const best = bonus[0] && bonus[0][2] > 0 ? bonus[0] : null;
+  const worst = bonus.filter(r => r[2] < 0).sort((a, b) => a[2] - b[2])[0];
+  const lines = [`Po rafinácii ≈ <b class="hq-t">${f(base)} SCU</b> → <b class="hq-t">${aU(base * price)}</b> <span class="mc-note">(rafinéria bez bonusu, ${Math.round(y * 10000) / 100} %)</span>`];
+  if (best) lines.push(`Najlepšia rafinéria: <b>${best[0]}</b> (${best[1]}) +${best[2]} % → ${f(base * (1 + best[2] / 100))} SCU · <b>${aU(base * (1 + best[2] / 100) * price)}</b>`);
+  if (worst) lines.push(`<span class="mc-note">Vyhni sa: ${worst[0]} ${worst[2]} % (${f(base * (1 + worst[2] / 100))} SCU)</span>`);
+  const sell = (typeof WM_SELL !== "undefined" && WM_SELL[ore]) || [];
+  if (sell.length) lines.push(`<span class="mc-note">Najlepší výkup: ${sell[0][0]} (${sell[0][1]}) ~${fmtK(sell[0][2])}/SCU → ${aU(base * (1 + (best ? best[2] : 0) / 100) * sell[0][2])}</span>`);
+  lines.push(`<span class="mc-note">Cena ${fmtK(price)}/SCU = medián top predajných cien (starcitizen.tools 4.10.3), bez poplatku za rafináciu. Over na termináli/UEX.</span>`);
+  out.innerHTML = lines.join("<br>");
 }
 
 function fmtK(v) { return v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : v >= 1000 ? Math.round(v / 1000) + "k" : Math.round(v) + ""; }
@@ -2493,6 +2548,7 @@ function onScanInput() {
 mcInit();
 bxInit();
 wmInit();
+qcInit();
 renderResults();
 </script>
 </body>
