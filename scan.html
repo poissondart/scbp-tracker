@@ -999,6 +999,14 @@ input{outline:none}
 .bx-pl-t i{font-style:normal;color:var(--amber)}
 .bx-apply{background:var(--bg2);border:1px solid var(--amber-dim);color:var(--amber);font-family:var(--mono);font-size:10px;padding:3px 7px;cursor:pointer}
 .bx-mit{font-size:11px;color:var(--blue);line-height:1.5;margin-top:4px}
+.bx-frag{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 6px;font-size:11px;color:var(--tx2)}
+.bx-frag .mc-input{width:90px;padding:4px 6px;font-size:12px}
+.bx-otab{overflow-x:auto;margin:4px 0}.bx-otab table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:10px}
+.bx-otab th{color:var(--tx3);font-weight:400;padding:3px;text-align:center;border-bottom:1px solid var(--line)}
+.bx-otab td{padding:3px;text-align:center;border-bottom:1px solid var(--line)}
+.bx-oc.ok{color:var(--green)}.bx-oc.tight{color:var(--amber)}.bx-oc.no{color:var(--red);opacity:.7}
+.bx-oc.best{background:rgba(52,211,153,.12);font-weight:700}
+.bx-check-l{font-size:11px;color:var(--tx2);line-height:1.6}
 .bx-plan-n{font-size:11px;color:var(--tx1);margin:6px 0 2px;font-weight:600}
 .bx-plan-sub{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--tx3);text-transform:uppercase;margin:2px 0}
 .bx-inv summary{cursor:pointer;list-style:none}.bx-inv summary::-webkit-details-marker{display:none}
@@ -1190,6 +1198,8 @@ input{outline:none}
       <label class="mc-field"><span>Instability</span><input class="mc-input" id="bxInst" type="text" inputmode="decimal" placeholder="13.8" autocomplete="off"></label>
     </div>
     <div class="bx-opts">
+      <label class="mc-field"><span>Ruda</span><select class="bx-select" id="bxOre">
+        <option value="">— iná / neurčená</option><option value="Savrilium">Savrilium</option><option value="Quantainium">Quantainium</option></select></label>
       <label class="mc-field"><span>Gadget na kameni</span><select class="bx-select" id="bxGadget"></select></label>
       <label class="bx-check"><input type="checkbox" id="bxTeam"> Tím: sčítať zaškrtnuté veže</label>
     </div>
@@ -1197,6 +1207,8 @@ input{outline:none}
 </div>
 
 <div id="bxResults"></div>
+<div id="bxFrag"></div>
+<div id="bxOrePanel"></div>
 <div id="bxPlan"></div>
 
 <div class="panel compact-panel">
@@ -1932,11 +1944,13 @@ function bxCompute() {
   if (!mass || mass <= 0) {
     out.innerHTML = `<div class="bx-hint">Zadaj mass, resistance a instability zo scanu.</div>`;
     document.getElementById("bxDetails").innerHTML = "";
-    bxRenderPlan(null);
+    bxRenderPlan(null); bxRenderOrePanel(null); bxRenderFrag(null);
     BX_SETUP.forEach((_, i) => { const m = document.getElementById("bxMini" + i); if (m) m.innerHTML = ""; });
     return;
   }
   const rock = { mass, res, inst };
+  bxRenderFrag(rock);
+  bxRenderOrePanel(rock, gadget);
   bxRenderPlan(rock, gadget);
   const evals = BX_SETUP.map(t => bxEval(t, rock, gadget));
 
@@ -2026,10 +2040,106 @@ function bxCompute() {
     <div class="bx-foot">Potrebný výkon = 0,27 × mass × (1 + R/100), R upravené laserom, modulmi a gadgetom. Rezerva ${BX_MARGIN}×. Koeficient overený na jednom kameni v 4.10 — berte ako odhad.</div>`;
 }
 
+
+// ═══ FRAGMENT: rýchla zmena hmotnosti, resistance/instability zostávajú ═══
+let BX_MAIN_MASS = null;
+function bxSetFrag(v) {
+  let m = num(v); if (!m || m <= 0) return;
+  if (m < 1000) m = m * 1000; // zadané v tonách
+  document.getElementById("bxMass").value = m; bxCompute();
+}
+function bxRenderFrag(rock) {
+  const el = document.getElementById("bxFrag");
+  if (!rock) { el.innerHTML = ""; return; }
+  const isFrag = BX_MAIN_MASS && rock.mass !== BX_MAIN_MASS;
+  el.innerHTML = `<div class="bx-frag"><span>Fragment:</span>
+    <input class="mc-input" id="bxFragIn" type="text" inputmode="decimal" placeholder="t alebo kg" onkeydown="if(event.key==='Enter')bxSetFrag(this.value)">
+    <button class="bx-apply" onclick="bxSetFrag(document.getElementById('bxFragIn').value)">Prepočítať</button>
+    ${isFrag ? `<button class="bx-apply" onclick="bxSetFrag(${BX_MAIN_MASS})">← kameň ${Math.round(BX_MAIN_MASS)}</button>` : ""}
+    <span class="mc-note">resistance a instability ostávajú zo skenu</span></div>`;
+  const i = document.getElementById("bxFragIn");
+  i.addEventListener("input", () => {}); // ponechaj
+}
+
+// ═══ PANEL PRE KONKRÉTNU RUDU (Savrilium / Quantainium) ═══
+// Typické konfigurácie z praxe (Isma Blades, 4.10) – appka ich prepočíta modelom na tvoje lasery
+const BX_ORE_CFGS = [
+  { k: "hx3s",  label: "Helix II + 3× Surge",             t: { laser: "Helix II", mods: ["Surge", "Surge", "Surge"] } },
+  { k: "hof2s", label: "Hofstede-S2 + 2× Surge",          t: { laser: "Hofstede-S2", mods: ["Surge", "Surge"] } },
+  { k: "hofsl", label: "Hofstede-S2 + Surge + Lifeline",  t: { laser: "Hofstede-S2", mods: ["Surge", "Lifeline"] } },
+  { k: "imp",   label: "Impact II + 2× Surge + Lifeline", t: { laser: "Impact II", mods: ["Surge", "Surge", "Lifeline"] } },
+];
+function bxOreCell(cfg, rock, gadget) {
+  const e = bxEval(cfg.t, rock, gadget);
+  const m = e.act.margin, inst = e.instAct;
+  const cls = m >= BX_MARGIN ? "ok" : m >= 1 ? "tight" : "no";
+  return { cls, m, inst, gz: e.gz, txt: `${m >= BX_MARGIN ? "✓" : m >= 1 ? "~" : "✗"} ${m.toFixed(2)}×` };
+}
+function bxRenderOrePanel(rock, gadget) {
+  const el = document.getElementById("bxOrePanel");
+  const ore = document.getElementById("bxOre").value;
+  if (!rock || !ore) { el.innerHTML = ""; return; }
+  const g = gadget || "—";
+  // 1) prvé rozbitie celého kameňa
+  const main = [BX_ORE_CFGS[0]].map(c => {
+    const a = bxOreCell(c, rock, g), b = bxOreCell(c, rock, "Sabir");
+    return `<div class="bx-pl ${b.cls}"><div class="bx-pl-top"><span><b>${c.label}</b></span></div>
+      <div class="bx-pl-t">bez gadgetu: ${a.txt} · <b>so Sabirom (95 %+): ${b.txt}</b> · instability po Surge ~${Math.round(b.inst)}${b.cls === "no" ? "<br>Sólo to nedá – potrebuješ druhú vežu alebo silnejší (crafted) Helix." : ""}</div></div>`;
+  }).join("");
+  // 2) tabuľka fragmentov – rovnaká resistance/instability, rôzne hmotnosti, bez gadgetu
+  const masses = [8000, 12000, 14000, 17000, 20000, 25000, 30000];
+  // poradie od najbezpečnejšej (najnižšia instability) po najsilnejšiu
+  const fr = [BX_ORE_CFGS[2], BX_ORE_CFGS[3], BX_ORE_CFGS[1], BX_ORE_CFGS[0]];
+  const head = `<tr><th>t</th>${fr.map(c => `<th>${c.label.replace("Hofstede-S2", "Hof").replace("Impact II", "Imp").replace("Helix II", "Helix").replace(/ \+ /g, "+").replace(/Surge/g, "S").replace("Lifeline", "L")}</th>`).join("")}</tr>`;
+  const rows = masses.map(mm => {
+    const r = { mass: mm, res: rock.res, inst: rock.inst };
+    const cells = fr.map(c => bxOreCell(c, r, "—"));
+    const best = cells.findIndex(x => x.cls === "ok");
+    return `<tr><td>${mm / 1000}</td>${cells.map((x, i) => `<td class="bx-oc ${x.cls}${i === best ? " best" : ""}">${x.txt}</td>`).join("")}</tr>`;
+  }).join("");
+  // 3) odhad výťažku
+  const price = (typeof WM_PRICE !== "undefined" && WM_PRICE[ore]) || 0;
+  el.innerHTML = `<div class="bx-plan"><div class="bx-plan-h">${ore} · postup z praxe (prepočítané na tvoje lasery)</div>
+    ${main}
+    <div class="bx-plan-sub" style="margin-top:6px">Fragmenty pri resistance ${rock.res} % / instability ${rock.inst}, bez gadgetu</div>
+    <div class="mc-note">Fragment má vlastnú resistance (čistý ${ore} ~60 %) – naskenuj ho, prepíš hodnoty hore a tabuľka sa prepočíta.</div>
+    <div class="bx-otab"><table>${head}${rows}</table></div>
+    <div class="mc-note">Zvýraznené = prvá konfigurácia, ktorá to dá s rezervou (najbezpečnejšie vľavo). Lifeline stiahne instability → čistejší break, menej straty. Prax (crafted Hofstede +32 %): čistý ${ore} do ~12 t Surge + Lifeline, 13–14 t 1× Surge, do ~27 t 2× Surge.</div>
+    <div class="bx-plan-sub" style="margin-top:8px">Odhad výťažku</div>
+    <div class="bx-frag"><span>${ore} v kameni</span><input class="mc-input" id="bxOrePct" type="text" inputmode="decimal" placeholder="% spolu"><span>SCU kameňa</span><input class="mc-input" id="bxOreScu" type="text" inputmode="decimal" placeholder="SCU"></div>
+    <div class="mc-note" id="bxOreYield"></div>
+    <div class="bx-plan-sub" style="margin-top:8px">Checklist</div>
+    <div class="bx-check-l">☐ 3 nové Surge na Helixe (7 nabití, počet sa nezobrazuje) + bedňa Surge/Lifeline/Focus III na palube<br>
+    ☐ Sabir: ukladaj znova, kým neukáže 90–98 %<br>☐ Helix do 30 m, Hofstede do 60 m · lasery na plný výkon<br>
+    ☐ Laser vypni/zapni → správna veľkosť zelenej zóny<br>☐ Throttle po 1 % (v zelenej 96–97 %), nie kolieskom naslepo<br>
+    ☐ Hofstede: pusti laser tesne pred rozbitím (−10 % instability)<br>☐ Zloženie fragmentov netreba riešiť – zbieraj všetko (na break stačí ich resistance/mass) · strata nad 10 % = prehriatie</div></div>`;
+  const y = () => {
+    const pct = num(document.getElementById("bxOrePct").value), scu = num(document.getElementById("bxOreScu").value);
+    const o = document.getElementById("bxOreYield");
+    if (!pct || !scu) { o.innerHTML = "Zadaj % rudy (súčet oboch riadkov zo scanu) a SCU kameňa."; return; }
+    const raw = scu * pct / 100 * 0.95, ref = raw * 0.45;
+    o.innerHTML = `Vyzbierané ≈ <b>${raw.toFixed(1)} SCU</b> (−5 % straty) → po rafinácii (45 %) ≈ <b>${ref.toFixed(1)} SCU</b>${price ? ` · ≈ <b>${Math.round(ref * price).toLocaleString("sk-SK")} aUEC</b>` : ""}`;
+  };
+  ["bxOrePct", "bxOreScu"].forEach(id => document.getElementById(id).addEventListener("input", y)); y();
+}
+
 // ═══ NÁVRH SETUPU — prehľadá kombinácie laserov a modulov z inventára ═══
 const BX_INV_KEY = "minerscan_inv_v1";
-const BX_INV_DEFAULT = { lasers: ["Helix II", "Hofstede-S2", "Arbor MH2", "Impact II"], mods: ["Rieger-C3", "Focus III", "Stampede", "Surge"] };
-function bxLoadInv() { try { const v = JSON.parse(localStorage.getItem(BX_INV_KEY)); if (v && v.lasers && v.mods) return v; } catch (e) {} return JSON.parse(JSON.stringify(BX_INV_DEFAULT)); }
+const BX_INV_DEFAULT = { lasers: ["Helix II", "Hofstede-S2", "Arbor MH2", "Impact II"], mods: ["Rieger-C3", "Focus III", "Stampede", "Surge", "Lifeline"] };
+function bxLoadInv() {
+  try {
+    const v = JSON.parse(localStorage.getItem(BX_INV_KEY));
+    if (v && v.lasers && v.mods) {
+      if (!v.v2) { if (!v.mods.includes("Lifeline")) v.mods.push("Lifeline"); v.v2 = true; try { localStorage.setItem(BX_INV_KEY, JSON.stringify(v)); } catch (e) {} }
+      return v;
+    }
+  } catch (e) {}
+  return JSON.parse(JSON.stringify(BX_INV_DEFAULT));
+}
+// spotrebné aktívne moduly – voziš ich v bedniach, počet nie je obmedzený
+const BX_CONSUMABLE = ["Surge", "Lifeline"];
+// optimálna vzdialenosť od kameňa (videá Isma Blades, 4.10)
+const BX_RANGE = { "Helix II": 30, "Hofstede-S2": 60 };
 let BX_INV = bxLoadInv();
 function bxInvToggle(kind, name, on) {
   const a = BX_INV[kind]; const i = a.indexOf(name);
@@ -2059,6 +2169,7 @@ function bxModAvail() {
   const a = {};
   BX_SETUP.forEach(t => (t.mods || []).filter(Boolean).forEach(m => a[m] = (a[m] || 0) + 1));
   BX_INV.mods.forEach(m => a[m] = (a[m] || 0) + 1);
+  BX_CONSUMABLE.forEach(m => { if (BX_INV.mods.includes(m)) a[m] = 9; });
   return a;
 }
 function bxFits(mods, avail) {
@@ -2112,10 +2223,15 @@ function bxTeamEval(team, rock) {
   const gz = Math.min(...team.map(c => c.e.gz));
   const instF = Math.max(...team.map(c => useAct ? c.instFA : c.instF));
   const nAct = useAct ? team.reduce((s, c) => s + c.nAct, 0) : 0;
+  // aktívne moduly: Surge/Lifeline sú štandard (bedňa na palube), ostatné aktívne penalizuj viac
+  const actPen = useAct ? team.reduce((s, c) => s + c.mods.filter(m => BX_MODULES[m].act).reduce((t, m) => t + (BX_CONSUMABLE.includes(m) ? 1 : 6), 0), 0) : 0;
+  // pri vysokej resistance Rieger podľa praxe nepomáha – uprednostni Surge
+  const hiRes = (rock.res || 0) >= 40;
+  const riegerPen = hiRes ? team.reduce((s, c) => s + c.mods.filter(m => m.startsWith("Rieger")).length, 0) * 4 : 0;
   const changes = team.reduce((s, c) => s + bxPosChanges(c), 0);
   const hiInst = (rock.inst || 0) >= 200;
   const score = status === "no" ? margin * 100
-    : (status === "ok" ? 1000 : 500) + Math.min(margin, 2) * 20 - nAct * 6 - changes * 2 + Math.log(gz) * 25 - (hiInst ? Math.log(instF) * 30 : 0);
+    : (status === "ok" ? 1000 : 500) + Math.min(margin, 2) * 20 - actPen - riegerPen - changes * 1 + Math.log(gz) * 25 - (hiInst ? Math.log(instF) * 30 : 0);
   return { team, margin, status, useAct, gz, instF, nAct, changes, score, throttle: nt / Pt };
 }
 
@@ -2164,6 +2280,7 @@ function bxPlan(rock, gadget) {
 function bxMitigation(rock) {
   const owned = m => BX_INV.mods.includes(m) ? `<b>${m}</b>` : `${m} <span style="opacity:.6">(nemáš)</span>`;
   const tips = [];
+  if ((rock.res || 0) >= 40) tips.push(`Pri vysokej resistance je základ <b>Surge</b> (Rieger resistance neznižuje). Surge má 7 nabití, počet sa nezobrazuje – pred veľkým kameňom daj nové. Predáva sa len v rafinérii v <b>Levski</b>, kúp bedňu do zásoby.`);
   if ((rock.res || 0) >= 40) tips.push(`Vysoká resistance (${rock.res} %): ${["Surge", "Rime", "Lifeline", "Deluge", "Overrun"].map(owned).join(", ")} znižujú resistance; laser Helix II/Hofstede-S2 (−30 %), gadget <b>Sabir</b> (−50 %) alebo OptiMax (−30 %).`);
   if ((rock.inst || 0) >= 200) tips.push(`Nestabilný kameň (${rock.inst}): ${["Lifeline", "Stampede", "Optimum"].map(owned).join(", ")} znižujú instability; laser Arbor MH2 (−35 %), gadget <b>BoreMax</b> (−70 %), Waveshift alebo Stalwart (−35 %). Vyhni sa Surge (+10 %) a Sabiru (+15 %).`);
   if ((rock.inst || 0) >= 200) tips.push(`Úzka zelená zóna pri nestabilite: ${["Focus III", "XTR-XL", "Clearcut"].map(owned).join(", ")} ju rozširujú; gadget Waveshift (+100 %) alebo Okunis (+50 %).`);
@@ -2189,7 +2306,7 @@ function bxTeamHtml(t, key) {
     const cur = BX_SETUP[c.pos];
     const same = cur.laser === c.laser && bxPosChanges(c) === 0;
     return `Veža ${c.pos + 1}: <b>${c.laser}</b> + ${c.mods.length ? c.mods.join(" · ") : "bez modulov"}` +
-      (t.useAct && acts.length ? ` → zapnúť <i>${acts.join(" + ")}</i>` : "") + (same ? ` <span style="opacity:.6">(bez zmeny)</span>` : "");
+      (t.useAct && acts.length ? ` → zapnúť <i>${acts.join(" + ")}</i>` : "") + (BX_RANGE[c.laser] ? ` <span style="opacity:.6">· do ${BX_RANGE[c.laser]} m</span>` : "") + (same ? ` <span style="opacity:.6">(bez zmeny)</span>` : "");
   }).join("<br>");
   window.BX_LAST_PLAN[key] = t;
   return `<div class="bx-pl ${t.status}"><div class="bx-pl-top"><span><b>${t.margin.toFixed(2)}×</b> ${st}${t.margin >= 1 ? ` · throttle ~${pct(t.throttle)}` : ""}${t.changes ? ` · ${t.changes} ${t.changes === 1 ? "zmena" : t.changes < 5 ? "zmeny" : "zmien"}` : ""}</span>
@@ -2205,8 +2322,10 @@ function bxRenderPlan(rock, gadget) {
   const ppl = n => n === 1 ? "1 človek" : n + " ľudia";
   const good = p => p && p.status === "ok";
   let h = `<div class="bx-plan-h">1 · Aktuálne lasery (${BX_SETUP.map(t => t.laser).join(" / ")}) – len prestavba modulov</div>`;
+  const bm = r => Math.max(r.pas ? r.pas.margin : 0, r.act ? r.act.margin : 0);
+  const showN = curN <= 3 ? curN : rows.slice().sort((a, b) => bm(b) - bm(a))[0].n;
   rows.forEach(r => {
-    if (r.n !== Math.min(3, curN)) return;   // ukáž len najmenší počet ľudí, ktorý to dá (inak najlepší pokus s 3)
+    if (r.n !== showN) return;   // najmenší počet ľudí, ktorý to dá; inak najlepší pokus
     const pasOk = good(r.pas);
     h += `<div class="bx-plan-n">${ppl(r.n)}</div>`;
     h += `<div class="bx-plan-sub">pasívne moduly</div>` + bxTeamHtml(r.pas, "p" + r.n);
@@ -2239,7 +2358,9 @@ function bxRenderPlan(rock, gadget) {
 
 function bxInit() {
   document.getElementById("bxGadget").innerHTML = Object.keys(BX_GADGETS).map(g => `<option>${g}</option>`).join("");
+  document.getElementById("bxMass").addEventListener("input", () => { BX_MAIN_MASS = num(document.getElementById("bxMass").value); });
   ["bxMass", "bxRes", "bxInst"].forEach(id => document.getElementById(id).addEventListener("input", bxCompute));
+  document.getElementById("bxOre").addEventListener("change", bxCompute);
   ["bxGadget", "bxTeam"].forEach(id => document.getElementById(id).addEventListener("change", bxCompute));
   bxRenderSetup();
   bxCompute();
