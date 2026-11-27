@@ -1805,11 +1805,11 @@ const BX_GADGETS = {
 };
 
 const BX_DEFAULT = [
-  { laser: "Helix II",  mods: ["Rieger-C3", "Focus III", "Stampede"], on: true },
-  { laser: "Hofstede-S2", mods: ["Rieger-C3", "Focus III"], on: true },
-  { laser: "Arbor MH2", mods: ["Focus III", "Focus III"], on: false },
+  { laser: "Helix II",  mods: ["Surge", "Surge", "Surge"], on: true },
+  { laser: "Hofstede-S2", mods: ["Surge", "Surge"], on: true },
+  { laser: "Impact II", mods: ["Surge", "Surge", "Lifeline"], on: false },
 ];
-const BX_SETUP_KEY = "minerscan_setup_v1";
+const BX_SETUP_KEY = "minerscan_setup_v2";
 
 function bxLoadSetup() {
   try { const s = JSON.parse(localStorage.getItem(BX_SETUP_KEY)); if (Array.isArray(s) && s.length === 3) return s; } catch (e) {}
